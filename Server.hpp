@@ -33,6 +33,7 @@ public:
     std::map<int, User *> get_clients();
     std::vector<pollfd> get_fds();
     void binding(char **av);
+    int ft_check_auten(std::map<int, User *> clients, int);
     ~Server();
 };
 

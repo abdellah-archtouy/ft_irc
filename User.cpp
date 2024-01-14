@@ -1,14 +1,20 @@
 #include "User.hpp"
 
-User::User(int socket) : _socket(socket) , _name(""), _nikename(""), _passW("")
+
+User::User(int socket) : _socket(socket) , _realname(""), _nikename(""), _passW("") , _user("")
 {
     this->buffer = "";
     this->is_autho = false;
 }
 
-void User::set_name(std::string name)
+void User::set_realname(std::string name)
 {
-    _name = name;
+    _realname = name;
+}
+
+void User::set_username(std::string name)
+{
+    _user = name;
 }
 
 void User::set_pass(std::string pass)
@@ -34,6 +40,16 @@ void User::set_buffer(std::string buffer1)
     }
 }
 
+void User::set_add(struct sockaddr_in ad)
+{
+    add = ad;
+}
+
+struct sockaddr_in User::get_add()
+{
+    return (add);
+}
+
 bool    User::get_autho_status()
 {
     return this->is_autho;
@@ -49,9 +65,13 @@ std::string User::get_buffer()
     return(buffer);
 }
 
-std::string User::get_name()
+std::string User::get_realname()
 {
-    return (_name);
+    return (_realname);
+}
+std::string User::get_username()
+{
+    return (_user);
 }
 
 std::string User::get_nikename()

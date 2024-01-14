@@ -31,6 +31,57 @@ void Server::binding(char **av)
     }
 }
 
+int Server::ft_check_auten(std::map<int, User *>client, int socket)
+{
+    std::string buffer = client[socket]->get_buffer().substr(0, client[socket]->get_buffer().find("\r\n"));
+    std::stringstream split(buffer);
+    std::string word;
+    std::vector<std::string> command;
+    std::getline(split, word,' ');
+    command.push_back(word);
+    std::getline(split, word);
+    command.push_back(word);
+    if (command.size() < 2)
+        return std::cerr << "you should insert second argument" << std::endl, 1;
+    if (client[socket]->get_pass() == "")
+    {
+        if (command[0] == "PASS")
+        {
+            if (command[1] == this->_pass)
+                client[socket]->set_pass(command[1]);
+            else
+                return std::cerr << "password incorect" << std::endl,1;
+            return 1;
+        }
+        else
+            return std::cerr << "you need first to authenticate" << std::endl,1;
+    }
+    else if (client[socket]->get_nikename() == "")
+    {
+        if (command[0] == "NICK")
+        {
+            client[socket]->set_nikename(command[1]);
+            return 1;
+        }
+        else
+            return std::cerr << "you need first to authenticate" << std::endl,1;
+    }
+    else if (client[socket]->get_username() == "")
+    {
+        if (command[0] == "USER")
+        {
+            client[socket]->set_username(command[1]);
+        }
+        else
+            return std::cerr << "you need first to authenticate" << std::endl,1;
+    }
+    client[socket]->set_autho_status(true);
+    std::cout << "\033[1;32m" << "User Connected " << "\033[0m" << std::endl;
+    send(socket, ":e1r3p7.1337.ma 001 user :Welcome to the Internet Relay Network user!user@10.11.3.7\r\n", 512, 0);
+    return 0;
+}
+
+
 void Server::polling()
 {
     int clientSocket = 0;
@@ -40,7 +91,7 @@ void Server::polling()
     tmp.revents = 0;
     fds.push_back(tmp);
     int pol = 0;
-        this->fd = &fds[0];
+    this->fd = &fds[0];
     while (1)
     {
         pol = poll(fd, fds.size(), -1);
@@ -51,11 +102,12 @@ void Server::polling()
         if (fds[0].revents & POLLIN)
         {
             fcntl(fd[0].fd, F_SETFL, O_NONBLOCK);
-            clientSocket = accept(serversocket, nullptr, nullptr);
+            sockaddr_in clinetadress;
+            socklen_t clientAddrLen = sizeof(clinetadress);
+            clientSocket = accept(serversocket, (struct sockaddr*)&clinetadress, &clientAddrLen);
             if (clientSocket < 0) {
                 std::cerr << "Error accepting connection" << std::endl;
                 exit(EXIT_FAILURE);
-
             }
             tmp.fd = clientSocket;
             tmp.events = POLLIN;
@@ -63,7 +115,7 @@ void Server::polling()
             fds[0].revents = 0;
             fds.push_back(tmp);
             clients[clientSocket] = new User(clientSocket);
-            std::cout << "\033[1;32m" << "User Connected " << "\033[0m" << std::endl;
+            clients[clientSocket]->set_add(clinetadress);
         }
         this->fd = &fds[0];
         for (size_t i = 1; i < fds.size(); i++)
@@ -81,6 +133,11 @@ void Server::polling()
                 clients[fds[i].fd]->set_buffer(buffer);
                 if (ab.find("\r\n") == std::string::npos)
                     break ;
+                if (clients[fds[i].fd]->get_autho_status() == false)
+                {
+                    ft_check_auten(clients, fds[i].fd);
+                    break;
+                }
                 std::cout << clients[fds[i].fd]->get_buffer() << std::endl;
                 // send(fd[i].fd, buffer, bytesRead, 0);
                 fd[i].revents = 0;
@@ -165,7 +222,7 @@ Server::~Server()
                 //             break;
                 //         }
                 //     }
-                //     else if (first != "USER" && clients[fds[i].fd]->get_name() == "")
+                //     else if (first != "USER" && clients[fds[i].fd]->get_username() == "")
                 //     {
                 //         std::cout << "You shuold to authenticate" << std::endl;
                 //         send(fds[i].fd, "You shuold to authenticate", 27, 0);
@@ -173,7 +230,7 @@ Server::~Server()
                 //     }
                 //     else if (first == "USER")
                 //     {
-                //         if (clients[fds[i].fd]->get_name() != "")
+                //         if (clients[fds[i].fd]->get_username() != "")
                 //         {
                 //             std::cout << "NAME is already set" << std::endl;
                 //             send(fds[i].fd, "NAME is already set", 24, 0);
@@ -181,7 +238,7 @@ Server::~Server()
                 //         }
                 //         else
                 //         {
-                //             clients[fds[i].fd]->set_name(second);
+                //             clients[fds[i].fd]->set_username(second);
                 //             std::cout << "NAME seted successfully" << std::endl;
                 //             send(fds[i].fd, "NAME seted successfully", 28, 0);
                 //         }
