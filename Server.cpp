@@ -77,14 +77,67 @@ int Server::ft_check_auten(std::map<int, User *>client, int socket)
     }
     client[socket]->set_autho_status(true);
     std::cout << "\033[1;32m" << "User Connected " << "\033[0m" << std::endl;
-    send(socket, ":e1r3p7.1337.ma 001 user :Welcome to the Internet Relay Network user!user@10.11.3.7\r\n", 512, 0);
+    send(socket, ":e1r3p7.1337.ma 001 user :Welcome to the Internet Relay Network user!user@10.11.3.7\r\n", 86, 0);
     return 0;
 }
 
 
+int Server::ft_get_buffer(std::vector<pollfd> &fd, std::map<int , User *> &clients, int i)
+{
+    fcntl(fd[i].fd, F_SETFL, O_NONBLOCK);
+    char buffer[512];
+    bzero(buffer, 512);
+    ssize_t bytesRead;
+    bytesRead = recv(fd[i].fd, buffer, sizeof(buffer), 0);
+    std::string ab = buffer;
+    clients[fd[i].fd]->set_buffer(buffer);
+    if (ab.find("\r\n") == std::string::npos)
+        return 1;
+    if (clients[fd[i].fd]->get_autho_status() == false)
+    {
+        ft_check_auten(clients, fd[i].fd);
+        return 1;
+    }
+    std::cout << clients[fd[i].fd]->get_buffer() << std::endl;
+    // send(fd[i].fd, buffer, bytesRead, 0);
+    fd[i].revents = 0;
+    return 0;
+}
+
+int Server::kick_out_client(std::vector<pollfd> &fds, std::map<int , User *> &clients, int i, std::vector<pollfd>::iterator it)
+{
+    close(fds[i].fd);
+    delete clients[fds[i].fd];
+    if (clients[fds[i].fd]->get_autho_status())
+        std::cout << "\033[1;31m" << "User Desconected " << "\033[0m" << std::endl;
+    clients.erase(fds[i].fd);
+    fds.erase(it);
+    return 0;
+}
+
+int Server::add_client(std::vector<pollfd> &fds, std::map<int , User *> &clients)
+{
+    pollfd tmp;
+    fcntl(fd[0].fd, F_SETFL, O_NONBLOCK);
+    sockaddr_in clinetadress;
+    socklen_t clientAddrLen = sizeof(clinetadress);
+    int clientSocket = accept(serversocket, (struct sockaddr*)&clinetadress, &clientAddrLen);
+    if (clientSocket < 0) {
+        std::cerr << "Error accepting connection" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    tmp.fd = clientSocket;
+    tmp.events = POLLIN;
+    tmp.revents = 0;
+    fds[0].revents = 0;
+    fds.push_back(tmp);
+    clients[clientSocket] = new User(clientSocket);
+    clients[clientSocket]->set_add(clinetadress);
+    return 0;
+}
+
 void Server::polling()
 {
-    int clientSocket = 0;
     pollfd tmp;
     tmp.fd = serversocket;
     tmp.events = POLLIN;
@@ -101,21 +154,7 @@ void Server::polling()
         }
         if (fds[0].revents & POLLIN)
         {
-            fcntl(fd[0].fd, F_SETFL, O_NONBLOCK);
-            sockaddr_in clinetadress;
-            socklen_t clientAddrLen = sizeof(clinetadress);
-            clientSocket = accept(serversocket, (struct sockaddr*)&clinetadress, &clientAddrLen);
-            if (clientSocket < 0) {
-                std::cerr << "Error accepting connection" << std::endl;
-                exit(EXIT_FAILURE);
-            }
-            tmp.fd = clientSocket;
-            tmp.events = POLLIN;
-            tmp.revents = 0;
-            fds[0].revents = 0;
-            fds.push_back(tmp);
-            clients[clientSocket] = new User(clientSocket);
-            clients[clientSocket]->set_add(clinetadress);
+            add_client(fds, clients);
         }
         this->fd = &fds[0];
         for (size_t i = 1; i < fds.size(); i++)
@@ -123,34 +162,13 @@ void Server::polling()
             std::vector<pollfd>::iterator it;
             if (fd[i].revents == POLLIN)
             {
-                fcntl(fd[i].fd, F_SETFL, O_NONBLOCK);
-                char buffer[512];
-                bzero(buffer, 512);
-                it = fds.begin() + i;
-                ssize_t bytesRead;
-                bytesRead = recv(fd[i].fd, buffer, sizeof(buffer), 0);
-                std::string ab = buffer;
-                clients[fds[i].fd]->set_buffer(buffer);
-                if (ab.find("\r\n") == std::string::npos)
-                    break ;
-                if (clients[fds[i].fd]->get_autho_status() == false)
-                {
-                    ft_check_auten(clients, fds[i].fd);
-                    break;
-                }
-                std::cout << clients[fds[i].fd]->get_buffer() << std::endl;
-                // send(fd[i].fd, buffer, bytesRead, 0);
-                fd[i].revents = 0;
+                ft_get_buffer(fds, clients, i);
                 break ;
             }
             else if (fd[i].revents & POLLHUP)
             {
                 it = fds.begin() + i;
-                close(fds[i].fd);
-                std::cout << "\033[1;31m" << "User Desconected " << "\033[0m" << std::endl;
-                delete clients[fds[i].fd];
-                clients.erase(fds[i].fd);
-                fds.erase(it);
+                kick_out_client(fds, clients,i,it);
                 break;
             }
         }
@@ -170,85 +188,48 @@ std::vector<pollfd> Server::get_fds()
 Server::~Server()
 {
 }
+            // fcntl(fd[0].fd, F_SETFL, O_NONBLOCK);
+            // sockaddr_in clinetadress;
+            // socklen_t clientAddrLen = sizeof(clinetadress);
+            // clientSocket = accept(serversocket, (struct sockaddr*)&clinetadress, &clientAddrLen);
+            // if (clientSocket < 0) {
+            //     std::cerr << "Error accepting connection" << std::endl;
+            //     exit(EXIT_FAILURE);
+            // }
+            // tmp.fd = clientSocket;
+            // tmp.events = POLLIN;
+            // tmp.revents = 0;
+            // fds[0].revents = 0;
+            // fds.push_back(tmp);
+            // clients[clientSocket] = new User(clientSocket);
+            // clients[clientSocket]->set_add(clinetadress);
 
-                // if (!clients[fds[i].fd]->get_autho_status())
+
+
+
+                // fcntl(fd[i].fd, F_SETFL, O_NONBLOCK);
+                // char buffer[512];
+                // bzero(buffer, 512);
+                // ssize_t bytesRead;
+                // bytesRead = recv(fd[i].fd, buffer, sizeof(buffer), 0);
+                // std::string ab = buffer;
+                // clients[fds[i].fd]->set_buffer(buffer);
+                // if (ab.find("\r\n") == std::string::npos)
+                //     break ;
+                // if (clients[fds[i].fd]->get_autho_status() == false)
                 // {
-                //     std::stringstream a(clients[fds[i].fd]->get_buffer());
-                //     std::string first;
-                //     std::string second;
-                //     std::getline(a,first,' ');
-                //     std::getline(a,second);
-                //     if (first != "PASS" && clients[fds[i].fd]->get_pass() == "")
-                //     {
-                //         std::cout << "You shuold to authenticate" << std::endl;
-                //         send(fds[i].fd, "You shuold to authenticate", 27, 0);
-                //         break;
-                //     }
-                //     else if (first == "PASS")
-                //     {
-                //         if (clients[fds[i].fd]->get_pass() != "")
-                //         {
-                //             std::cout << "password is already set" << std::endl;
-                //             send(fds[i].fd, "password is already set", 24, 0);
-                //             break;
-                //         }
-                //         else if (second == this->_pass)
-                //         {
-                //             clients[fds[i].fd]->set_pass(second);
-                //             std::cout << "password seted successfully" << std::endl;
-                //             send(fds[i].fd, "password seted successfully", 28, 0);
-                //             break;
-                //         }
-                //     }
-                //     else if (first != "NICK" && clients[fds[i].fd]->get_nikename() == "")
-                //     {
-                //         std::cout << "You shuold to authenticate" << std::endl;
-                //         send(fds[i].fd, "You shuold to authenticate", 27, 0);
-                //         break;
-                //     }
-                //     else if (first == "NICK")
-                //     {
-                //         if (clients[fds[i].fd]->get_nikename() != "")
-                //         {
-                //             std::cout << "NICK NAME is already set" << std::endl;
-                //             send(fds[i].fd, "NICK NAME is already set", 25, 0);
-                //             break;
-                //         }
-                //         else
-                //         {
-                //             clients[fds[i].fd]->set_nikename(second);
-                //             std::cout << "NICK NAME seted successfully" << std::endl;
-                //             send(fds[i].fd, "NICK NAME seted successfully", 29, 0);
-                //             break;
-                //         }
-                //     }
-                //     else if (first != "USER" && clients[fds[i].fd]->get_username() == "")
-                //     {
-                //         std::cout << "You shuold to authenticate" << std::endl;
-                //         send(fds[i].fd, "You shuold to authenticate", 27, 0);
-                //         break;
-                //     }
-                //     else if (first == "USER")
-                //     {
-                //         if (clients[fds[i].fd]->get_username() != "")
-                //         {
-                //             std::cout << "NAME is already set" << std::endl;
-                //             send(fds[i].fd, "NAME is already set", 24, 0);
-                //             break;
-                //         }
-                //         else
-                //         {
-                //             clients[fds[i].fd]->set_username(second);
-                //             std::cout << "NAME seted successfully" << std::endl;
-                //             send(fds[i].fd, "NAME seted successfully", 28, 0);
-                //         }
-                //     }
-                //     else
-                //     {
-                //         std::cout << "You shuold to authenticate" << std::endl;
-                //         send(fds[i].fd, "You shuold to authenticate", 28, 0);
-                //         break;
-                //     }
-                //     clients[fds[i].fd]->set_autho_status(true);
-                //     std::cout << "\033[1;32m" << "User Connected " << "\033[0m" << std::endl;
+                //     ft_check_auten(clients, fds[i].fd);
+                //     break;
                 // }
+                // std::cout << clients[fds[i].fd]->get_buffer() << std::endl;
+                // // send(fd[i].fd, buffer, bytesRead, 0);
+                // fd[i].revents = 0;
+
+
+
+                // close(fds[i].fd);
+                // if (clients[fds[i].fd]->get_autho_status())
+                //     std::cout << "\033[1;31m" << "User Desconected " << "\033[0m" << std::endl;
+                // delete clients[fds[i].fd];
+                // clients.erase(fds[i].fd);
+                // fds.erase(it);
