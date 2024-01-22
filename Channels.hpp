@@ -9,6 +9,7 @@ class Channels
 {
     private:
         std::string ChaName;
+        std::string pass;
         std::vector<int> users;
         std::vector<int> operators;
     public:

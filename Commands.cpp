@@ -39,7 +39,7 @@ void Commands(std::map<int , User *> &clients, int fd, std::vector<Channels> &Ch
         command.push_back(tmp);
     if (command[0] == "JOIN" && !ParseJoin(command))
     {
-        tmp = "\033[1;32mYou Have Been Joined #" + command[1].substr(1, command[1].size()) + " Channel\n";
+        tmp = ":e1r3p7.1337.ma JOIN #" + command[1].substr(1, command[1].size()) + "\r\n";
         send(fd, tmp.c_str(), tmp.size(), 0);
         tmp.clear();
         tmp = command[1].substr(1, command[1].size());
