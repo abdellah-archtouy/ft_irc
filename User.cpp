@@ -84,6 +84,14 @@ std::string User::get_pass()
     return (_passW);
 }
 
+void User::set_chaine(std::string name) {
+    this->chname = name;
+}
+
+std::string User::get_chaine() {
+    return this->chname;
+}
+
 User::~User()
 {
     close(_socket);

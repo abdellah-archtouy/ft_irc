@@ -31,6 +31,7 @@ private:
     std::string _user;
     std::string buffer;
     struct sockaddr_in add;
+    std::string chname;
 public:
     User(int socket);
     bool    get_autho_status();
@@ -39,6 +40,8 @@ public:
     std::string get_realname();
     std::string get_nikename();
     std::string get_pass();
+    void set_chaine(std::string name);
+    std::string get_chaine();
     struct sockaddr_in get_add();
     void    set_add(struct sockaddr_in);
     void set_autho_status(bool);

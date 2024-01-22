@@ -17,17 +17,26 @@
 #include <signal.h>
 #include <sys/socket.h>
 #include "User.hpp"
+#include "Channels.hpp"
+
+// #define TOPIC 0
+// #define KICK 1
+// #define MODE 2
+// #define INVITE 3
+// #define JOIN 4
+
 
 class Server
 {
 private:
-    std::vector<pollfd> fds;
-    int serversocket;
-    std::map<int, User *> clients;
     std::string _pass;
-    struct pollfd *fd;
     std::string _port;
+    int serversocket;
+    struct pollfd *fd;
+    std::vector<pollfd> fds;
+    std::map<int, User *> clients;
 public:
+    std::vector<Channels> Channel;
     Server(/* args */);
     void polling(void);
     std::map<int, User *> get_clients();
@@ -40,7 +49,7 @@ public:
     ~Server();
 };
 
-
+void Commands(std::map<int , User *> &clients, int fd, std::vector<Channels> &Channel);
 
 
 #endif

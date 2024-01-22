@@ -3,19 +3,19 @@
 
 Server::Server()
 {
-    serversocket = socket(AF_INET, SOCK_STREAM, 0);
+    serversocket = socket(AF_INET, SOCK_STREAM, 0); // here we creates the socket
     if (serversocket == -1){
         std::cerr << "Error creating socket" << std::endl;
         exit(EXIT_FAILURE);
     }
 }
 
-void Server::binding(char **av)
+void Server::binding(char **av) // here we bind the socket
 {
 
-    _pass = av[2];
-    _port = av[1];
-    sockaddr_in ServerAddress;
+    _pass = av[2]; // ip
+    _port = av[1]; // port
+    sockaddr_in ServerAddress; // used to store infos about socket
     ServerAddress.sin_family = AF_INET;
     ServerAddress.sin_addr.s_addr = INADDR_ANY;
     ServerAddress.sin_port = htons(atoi(_port.c_str()));
@@ -43,20 +43,20 @@ int Server::ft_check_auten(std::map<int, User *>client, int socket)
     command.push_back(word);
     if (command.size() < 2)
         return std::cerr << "you should insert second argument" << std::endl, 1;
-    if (client[socket]->get_pass() == "")
+    if (client[socket]->get_pass().empty())
     {
         if (command[0] == "PASS")
         {
             if (command[1] == this->_pass)
                 client[socket]->set_pass(command[1]);
             else
-                return std::cerr << "password incorect" << std::endl,1;
+                return std::cerr << "password incorrect" << std::endl,1;
             return 1;
         }
         else
             return std::cerr << "you need first to authenticate" << std::endl,1;
     }
-    else if (client[socket]->get_nikename() == "")
+    else if (client[socket]->get_nikename().empty())
     {
         if (command[0] == "NICK")
         {
@@ -66,7 +66,7 @@ int Server::ft_check_auten(std::map<int, User *>client, int socket)
         else
             return std::cerr << "you need first to authenticate" << std::endl,1;
     }
-    else if (client[socket]->get_username() == "")
+    else if (client[socket]->get_username().empty())
     {
         if (command[0] == "USER")
         {
@@ -77,10 +77,10 @@ int Server::ft_check_auten(std::map<int, User *>client, int socket)
     }
     client[socket]->set_autho_status(true);
     std::cout << "\033[1;32m" << "User Connected " << "\033[0m" << std::endl;
-    send(socket, ":e1r3p7.1337.ma 001 user :Welcome to the Internet Relay Network user!user@10.11.3.7\r\n", 86, 0);
+    std::string msg = ":e1r3p7.1337.ma 001 user :Welcome to the Internet Relay Network " + client[socket]->get_username() + "\r\n";
+    send(socket, msg.c_str(), msg.size(), 0);
     return 0;
 }
-
 
 int Server::ft_get_buffer(std::vector<pollfd> &fd, std::map<int , User *> &clients, int i)
 {
@@ -98,7 +98,7 @@ int Server::ft_get_buffer(std::vector<pollfd> &fd, std::map<int , User *> &clien
         ft_check_auten(clients, fd[i].fd);
         return 1;
     }
-    std::cout << clients[fd[i].fd]->get_buffer() << std::endl;
+    Commands(clients, fd[i].fd, this->Channel);
     // send(fd[i].fd, buffer, bytesRead, 0);
     fd[i].revents = 0;
     return 0;
@@ -139,6 +139,7 @@ int Server::add_client(std::vector<pollfd> &fds, std::map<int , User *> &clients
 void Server::polling()
 {
     pollfd tmp;
+    // is a represent of file descriptor and we will pass it as an argument to poll so we can work with multiple fds
     tmp.fd = serversocket;
     tmp.events = POLLIN;
     tmp.revents = 0;
