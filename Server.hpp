@@ -32,7 +32,7 @@ public:
     void polling(void);
     std::map<int, User *> get_clients();
     std::vector<pollfd> get_fds();
-    void binding(char **av);
+    void binding(std::string);
     int ft_check_auten(std::map<int, User *> clients, int);
     int ft_get_buffer(std::vector<pollfd> &fd, std::map<int , User *> &clients, int i);
     int kick_out_client(std::vector<pollfd> &fds, std::map<int , User *> &clients, int i, std::vector<pollfd>::iterator it);

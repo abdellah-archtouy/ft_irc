@@ -10,11 +10,33 @@ Server::Server()
     }
 }
 
-void Server::binding(char **av)
+int ft_check_param(std::vector<std::string> parameters)
 {
+    std::string port = parameters[0];
+    for (size_t i = 0; i < port.size(); i++)
+    {
+        if (!isdigit(port[i]))
+            return 1;
+    }
+    return (0);
+}
 
-    _pass = av[2];
-    _port = av[1];
+void Server::binding(std::string line)
+{
+    std::stringstream split(line);
+    std::vector<std::string> parameters;
+    std::string param;
+    while (split >> param)
+    {
+        parameters.push_back(param);
+    }
+    if (parameters.size() != 2 || ft_check_param(parameters))
+    {
+        std::cout << "parameters Error" << std::endl;
+        exit(1);
+    }
+    _port = parameters[0];
+    _pass = parameters[1];
     sockaddr_in ServerAddress;
     ServerAddress.sin_family = AF_INET;
     ServerAddress.sin_addr.s_addr = INADDR_ANY;
@@ -25,7 +47,7 @@ void Server::binding(char **av)
         exit(EXIT_FAILURE);
     }
 
-    if (listen(serversocket, 10) == -1) {
+    if (listen(serversocket, 1) == -1) {
         std::cerr << "Error listening for connections" << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -50,7 +72,7 @@ int Server::ft_check_auten(std::map<int, User *>client, int socket)
             if (command[1] == this->_pass)
                 client[socket]->set_pass(command[1]);
             else
-                return std::cerr << "password incorect" << std::endl,1;
+                return std::cerr << "password incorect" << std::endl, send(socket, ":e1r3p7.1337.ma 464 * :Password incorrect\r\n", 44, 0),1;
             return 1;
         }
         else
@@ -187,6 +209,11 @@ std::vector<pollfd> Server::get_fds()
 
 Server::~Server()
 {
+    for (std::map<int ,User *>::iterator i = clients.begin(); i != clients.end(); i++)
+    {
+        close(i->first);
+        delete i->second;
+    }
 }
             // fcntl(fd[0].fd, F_SETFL, O_NONBLOCK);
             // sockaddr_in clinetadress;
