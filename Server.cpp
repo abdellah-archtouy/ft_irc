@@ -21,6 +21,15 @@ int ft_check_param(std::vector<std::string> parameters)
     return (0);
 }
 
+std::string Server::get_host()
+{
+    char hostname[256]; // Assuming a maximum hostname length of 255 characters
+    std::string host = ":";
+    if (gethostname(hostname, sizeof(hostname)) == 0)
+        host = host + hostname;
+    return host;
+}
+
 void Server::binding(std::string line)
 {
     std::stringstream split(line);
@@ -60,46 +69,47 @@ int Server::ft_check_auten(std::map<int, User *>client, int socket)
     std::string word;
     std::vector<std::string> command;
     std::getline(split, word,' ');
-    command.push_back(word);
-    std::getline(split, word);
-    command.push_back(word);
-    if (command.size() < 2)
-        return std::cerr << "you should insert second argument" << std::endl, 1;
-    if (client[socket]->get_pass() == "")
+    while (word != "")
     {
-        if (command[0] == "PASS")
-        {
-            if (command[1] == this->_pass)
-                client[socket]->set_pass(command[1]);
-            else
-                return std::cerr << "password incorect" << std::endl, send(socket, ":e1r3p7.1337.ma 464 * :Password incorrect\r\n", 44, 0),1;
-            return 1;
-        }
-        else
-            return std::cerr << "you need first to authenticate" << std::endl,1;
+        command.push_back(word);
+        word.clear();
+        std::getline(split, word);
     }
-    else if (client[socket]->get_nikename() == "")
+    std::string host = ":e3r2p7.1337.ma";
+    if (command[0] != "PASS" && command[0] != "NICK" && command[0] != "USER")
+        return send(socket, ERR_NOTREGISTERED(get_host(), clients[socket]->get_username()).c_str(), ERR_NOTREGISTERED(get_host(), clients[socket]->get_username()).size(), 0),1;
+    if (command[0] == "PASS")
     {
-        if (command[0] == "NICK")
-        {
-            client[socket]->set_nikename(command[1]);
-            return 1;
-        }
+        if (command.size() < 2)
+            return send(socket, ERR_NEEDMOREPARAMS(get_host(), clients[socket]->get_username()).c_str(), ERR_NOTREGISTERED(get_host(), clients[socket]->get_username()).size(), 0), 1;
+        if (client[socket]->get_pass() != "")
+            send(socket, ERR_ALREADYREGISTERED(get_host(), clients[socket]->get_username()).c_str(), ERR_NOTREGISTERED(get_host(), clients[socket]->get_username()).size(), 0);
+        else if (command[1] == this->_pass)
+            client[socket]->set_pass(command[1]);
         else
-            return std::cerr << "you need first to authenticate" << std::endl,1;
+            send(socket, ERR_PASSWDMISMATCH(get_host(), clients[socket]->get_username()).c_str(), ERR_PASSWDMISMATCH(get_host(), clients[socket]->get_username()).size(), 0);
     }
-    else if (client[socket]->get_username() == "")
+    else if (command[0] == "USER")
     {
-        if (command[0] == "USER")
-        {
+        if (client[socket]->get_username() != "*")
+            send(socket, ERR_ALREADYREGISTERED(get_host(), clients[socket]->get_username()).c_str(), ERR_NOTREGISTERED(get_host(), clients[socket]->get_username()).size(), 0);
+        else 
             client[socket]->set_username(command[1]);
-        }
-        else
-            return std::cerr << "you need first to authenticate" << std::endl,1;
     }
+    else if (command[0] == "NICK")
+    {
+        if (command.size() < 2)
+            return send(socket, ERR_NONICKNAMEGIVEN(get_host(), clients[socket]->get_username()).c_str(), ERR_NOTREGISTERED(get_host(), clients[socket]->get_username()).size(), 0), 1;
+        if (client[socket]->get_nickname() != "")
+            send(socket, ERR_ALREADYREGISTERED(get_host(), clients[socket]->get_username()).c_str(), ERR_NOTREGISTERED(get_host(), clients[socket]->get_username()).size(), 0);
+        else 
+            client[socket]->set_nickname(command[1]);
+    }
+    if (client[socket]->get_pass() == "" || client[socket]->get_nickname() == "" || client[socket]->get_username() == "*")
+        return 1;
     client[socket]->set_autho_status(true);
     std::cout << "\033[1;32m" << "User Connected " << "\033[0m" << std::endl;
-    send(socket, ":e1r3p7.1337.ma 001 user :Welcome to the Internet Relay Network user!user@10.11.3.7\r\n", 86, 0);
+    send(socket, RPL_WELCOME(get_host(), clients[socket]->get_username()).c_str(), RPL_WELCOME(get_host(), clients[socket]->get_username()).size(), 0);
     return 0;
 }
 
@@ -260,3 +270,39 @@ Server::~Server()
                 // delete clients[fds[i].fd];
                 // clients.erase(fds[i].fd);
                 // fds.erase(it);
+
+
+
+
+                // if (client[socket]->get_pass() == "")
+    // {
+    //     if (command[0] == "PASS")
+    //     {
+    //         if (command[1] == this->_pass)
+    //             client[socket]->set_pass(command[1]);
+    //         else
+    //             return send(socket, ERR_PASSWDMISMATCH(host, clients[socket]->get_username()).c_str(), ERR_PASSWDMISMATCH(host, "*").size(), 0),1;
+    //         return 1;
+    //     }
+    //     else
+    //         return std::cerr << "you need first to authenticate" << std::endl,1;
+    // }
+    // else if (client[socket]->get_nikename() == "")
+    // {
+    //     if (command[0] == "NICK")
+    //     {
+    //         client[socket]->set_nikename(command[1]);
+    //         return 1;
+    //     }
+    //     else
+    //         return std::cerr << "you need first to authenticate" << std::endl,1;
+    // }
+    // else if (client[socket]->get_username() == "*")
+    // {
+    //     if (command[0] == "USER")
+    //     {
+    //         client[socket]->set_username(command[1]);
+    //     }
+    //     else
+    //         return std::cerr << "you need first to authenticate" << std::endl,1;
+    // }
