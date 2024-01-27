@@ -22,9 +22,17 @@ int main(int ac, char **av)
 {
     if (ac == 3)
     {
+        int i = 1;
+        std::string line = av[i++];
+        while (i < ac)
+        {
+            line = line + " ";
+            line = line + av[i];
+            i++;
+        }
         std::cout << "Server listening on port " << av[1] << std::endl;
         signal(SIGINT, handler);
-        server.binding(av);
+        server.binding(line);
         server.polling();
     }
     else

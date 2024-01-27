@@ -10,7 +10,7 @@ class Channels
     private:
         std::string ChaName;
         std::string pass;
-        std::vector<int> users;
+        std::map<int, std::string> users;
         std::vector<int> operators;
     public:
 
@@ -21,14 +21,20 @@ class Channels
         void setName(std::string name) {
             this->ChaName = name;
         }
-        void setUsers(int user) {
-            this->users.push_back(user);
+        void setPass(std::string pass) {
+            this->pass = pass;
+        }
+        void setUsers(int socket, std::string user) {
+            this->users[socket] = user;
         }
         std::string getName() {
             return (this->ChaName);
         }
-        std::vector<int>& getUsers() {
+        std::map<int, std::string>& getUsers() {
             return users;
+        }
+        std::string getPass() {
+            return pass;
         }
         /*  implement Commands as methods    */
 };

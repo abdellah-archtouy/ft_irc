@@ -38,7 +38,7 @@ public:
     std::string get_buffer();
     std::string get_username();
     std::string get_realname();
-    std::string get_nikename();
+    std::string get_nickname();
     std::string get_pass();
     void set_chaine(std::string name);
     std::string get_chaine();
@@ -47,7 +47,7 @@ public:
     void set_autho_status(bool);
     void set_buffer(std::string);
     void set_pass(std::string);
-    void set_nikename(std::string);
+    void set_nickname(std::string);
     void set_username(std::string);
     void set_realname(std::string);
     ~User();
