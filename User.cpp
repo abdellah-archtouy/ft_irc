@@ -43,6 +43,16 @@ void User::set_buffer(std::string buffer1)
 void User::set_add(struct sockaddr_in ad)
 {
     add = ad;
+    char ipAddressBuffer[INET_ADDRSTRLEN];
+    const char* result = inet_ntop(AF_INET, &ad.sin_addr.s_addr, ipAddressBuffer, INET_ADDRSTRLEN);
+    if (result == 0) {
+        std::cerr << "Error converting struct in_addr to string" << std::endl;
+        return ;
+    }
+    char storedIpAddress[INET_ADDRSTRLEN];
+    strncpy(storedIpAddress, result, sizeof(storedIpAddress));
+    storedIpAddress[sizeof(storedIpAddress) - 1] = '\0';
+    this->ip_address = storedIpAddress;
 }
 
 struct sockaddr_in User::get_add()
@@ -88,3 +98,8 @@ User::~User()
 {
     close(_socket);
 }
+
+    // std::cout << "IPv4 Address: " << (ipAddress & 0xFF) << "."
+    //           << ((ipAddress >> 8) & 0xFF) << "."
+    //           << ((ipAddress >> 16) & 0xFF) << "."
+    //           << ((ipAddress >> 24) & 0xFF) << std::endl;

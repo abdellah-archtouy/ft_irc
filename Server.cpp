@@ -138,10 +138,10 @@ int Server::ft_get_buffer(std::vector<pollfd> &fd, std::map<int , User *> &clien
 
 int Server::kick_out_client(std::vector<pollfd> &fds, std::map<int , User *> &clients, int i, std::vector<pollfd>::iterator it)
 {
-    close(fds[i].fd);
-    delete clients[fds[i].fd];
     if (clients[fds[i].fd]->get_autho_status())
         std::cout << "\033[1;31m" << "User Desconected " << "\033[0m" << std::endl;
+    close(fds[i].fd);
+    delete clients[fds[i].fd];
     clients.erase(fds[i].fd);
     fds.erase(it);
     return 0;
@@ -219,11 +219,11 @@ std::vector<pollfd> Server::get_fds()
 
 Server::~Server()
 {
-    for (std::map<int ,User *>::iterator i = clients.begin(); i != clients.end(); i++)
-    {
-        close(i->first);
-        delete i->second;
-    }
+    // for (std::map<int ,User *>::iterator i = clients.begin(); i != clients.end(); i++)
+    // {
+    //     close(i->first);
+    //     delete i->second;
+    // }
 }
             // fcntl(fd[0].fd, F_SETFL, O_NONBLOCK);
             // sockaddr_in clinetadress;

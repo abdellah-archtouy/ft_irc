@@ -30,6 +30,7 @@ private:
     std::string _passW;
     std::string _user;
     std::string buffer;
+    std::string ip_address;
     struct sockaddr_in add;
 public:
     User(int socket);
