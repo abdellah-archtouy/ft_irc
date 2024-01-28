@@ -74,6 +74,9 @@ std::string User::get_buffer()
 {
     return(buffer);
 }
+std::string User::get_ip(){
+    return ip_address;
+}
 
 std::string User::get_realname()
 {

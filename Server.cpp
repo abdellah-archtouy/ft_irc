@@ -23,7 +23,7 @@ int ft_check_param(std::vector<std::string> parameters)
 
 std::string Server::get_host()
 {
-    char hostname[256]; // Assuming a maximum hostname length of 255 characters
+    char hostname[256]; 
     std::string host = ":";
     if (gethostname(hostname, sizeof(hostname)) == 0)
         host = host + hostname;
@@ -62,6 +62,63 @@ void Server::binding(std::string line)
     }
 }
 
+int ft_check_nick(std::map<int , User *> client , std::string nick)
+{
+    std::map<int , User *>::iterator it = client.begin();
+
+    if (isdigit(nick[0]))
+        return 2;
+    size_t i = 0;
+    while (i < nick.size())
+    {
+        if(nick[i] == ':' || nick[i] == '#' || nick[i] == '&' || isspace(nick[i]))
+            return 2;
+        i++;
+    }
+    while (it != client.end())
+    {
+        if (it->second->get_nickname() == nick)
+            return 1;
+        it++;
+    }
+    return 0;
+}
+
+int ft_chek_user(std::string user)
+{
+    std::stringstream a(user);
+    (void)user;
+    std::string word;
+    a >> word;
+    a >> word;
+    if(word != "0")
+        return (1);
+    a >> word;
+    if(word != "*")
+        return (1);
+    a >> word;
+    return 0;
+}
+std::string ft_get_username(std::string user)
+{
+    std::stringstream a(user);
+    (void)user;
+    std::string word;
+    a >> word;
+    return word;
+}
+std::string ft_get_realname(std::string user)
+{
+    std::stringstream a(user);
+    (void)user;
+    std::string word;
+    a >> word;
+    a >> word;
+    a >> word;
+    a >> word;
+    return word;
+}
+
 int Server::ft_check_auten(std::map<int, User *>client, int socket)
 {
     std::string buffer = client[socket]->get_buffer().substr(0, client[socket]->get_buffer().find("\r\n"));
@@ -81,9 +138,9 @@ int Server::ft_check_auten(std::map<int, User *>client, int socket)
     if (command[0] == "PASS")
     {
         if (command.size() < 2)
-            return send(socket, ERR_NEEDMOREPARAMS(get_host(), clients[socket]->get_username()).c_str(), ERR_NOTREGISTERED(get_host(), clients[socket]->get_username()).size(), 0), 1;
+            return send(socket, ERR_NEEDMOREPARAMS(get_host(), clients[socket]->get_username()).c_str(), ERR_NEEDMOREPARAMS(get_host(), clients[socket]->get_username()).size(), 0), 1;
         if (client[socket]->get_pass() != "")
-            send(socket, ERR_ALREADYREGISTERED(get_host(), clients[socket]->get_username()).c_str(), ERR_NOTREGISTERED(get_host(), clients[socket]->get_username()).size(), 0);
+            send(socket, ERR_ALREADYREGISTERED(get_host(), clients[socket]->get_username()).c_str(), ERR_ALREADYREGISTERED(get_host(), clients[socket]->get_username()).size(), 0);
         else if (command[1] == this->_pass)
             client[socket]->set_pass(command[1]);
         else
@@ -93,15 +150,24 @@ int Server::ft_check_auten(std::map<int, User *>client, int socket)
     {
         if (client[socket]->get_username() != "*")
             send(socket, ERR_ALREADYREGISTERED(get_host(), clients[socket]->get_username()).c_str(), ERR_NOTREGISTERED(get_host(), clients[socket]->get_username()).size(), 0);
-        else 
-            client[socket]->set_username(command[1]);
+        else if (ft_chek_user(command[1]))
+            send(socket, ERR_NEEDMOREPARAMS(get_host(), clients[socket]->get_username()).c_str(), ERR_NEEDMOREPARAMS(get_host(), clients[socket]->get_username()).size(), 0);
+        else
+        {
+            client[socket]->set_username(ft_get_username(command[1]));
+            client[socket]->set_realname(ft_get_realname(command[1]));
+        }
     }
     else if (command[0] == "NICK")
     {
         if (command.size() < 2)
-            return send(socket, ERR_NONICKNAMEGIVEN(get_host(), clients[socket]->get_username()).c_str(), ERR_NOTREGISTERED(get_host(), clients[socket]->get_username()).size(), 0), 1;
+            return send(socket, ERR_NONICKNAMEGIVEN(get_host(), clients[socket]->get_username()).c_str(), ERR_NONICKNAMEGIVEN(get_host(), clients[socket]->get_username()).size(), 0), 1;
         if (client[socket]->get_nickname() != "")
-            send(socket, ERR_ALREADYREGISTERED(get_host(), clients[socket]->get_username()).c_str(), ERR_NOTREGISTERED(get_host(), clients[socket]->get_username()).size(), 0);
+            send(socket, ERR_ALREADYREGISTERED(get_host(), clients[socket]->get_username()).c_str(), ERR_ALREADYREGISTERED(get_host(), clients[socket]->get_username()).size(), 0);
+        else if (ft_check_nick(clients, command[1]) == 2)
+            send(socket, ERR_ERRONEUSNICKNAME(get_host(), clients[socket]->get_username()).c_str(), ERR_ERRONEUSNICKNAME(get_host(), clients[socket]->get_username()).size(), 0);
+        else if (ft_check_nick(clients, command[1]))
+            send(socket, ERR_NICKNAMEINUSE(get_host(), clients[socket]->get_username()).c_str(), ERR_NICKNAMEINUSE(get_host(), clients[socket]->get_username()).size(), 0);
         else 
             client[socket]->set_nickname(command[1]);
     }
@@ -109,7 +175,7 @@ int Server::ft_check_auten(std::map<int, User *>client, int socket)
         return 1;
     client[socket]->set_autho_status(true);
     std::cout << "\033[1;32m" << "User Connected " << "\033[0m" << std::endl;
-    send(socket, RPL_WELCOME(get_host(), clients[socket]->get_username()).c_str(), RPL_WELCOME(get_host(), clients[socket]->get_username()).size(), 0);
+    send(socket, RPL_WELCOME(get_host(), clients[socket]->get_username(), "user!user@" + client[socket]->get_ip()).c_str(), RPL_WELCOME(get_host(), clients[socket]->get_username(), "user!user@" + client[socket]->get_ip()).size(), 0);
     return 0;
 }
 

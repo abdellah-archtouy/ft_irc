@@ -17,8 +17,8 @@
 #include <signal.h>
 #include <sys/socket.h>
 #include "User.hpp"
-
-#define RPL_WELCOME(HOST , USER) (HOST  + " 001 " + USER + " :Welcome to the Internet Relay Network user!user@10.11.3.7" + "\r\n")
+// user!user@10.11.3.7
+#define RPL_WELCOME(HOST , USER , IP) (HOST  + " 001 " + USER + " :Welcome to the Internet Relay Network " + IP + "\r\n")
 #define ERR_PASSWDMISMATCH(HOST , USER) (HOST  + " 464 " + USER + " :Password incorrect" + "\r\n")
 #define ERR_NEEDMOREPARAMS(HOST , USER) (HOST  + " 461 " + USER + " :Not enough parameters" + "\r\n")
 #define ERR_NOTREGISTERED(HOST , USER) (HOST  + " 451 " + USER + " :You have not registered" + "\r\n")

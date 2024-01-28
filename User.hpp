@@ -36,6 +36,7 @@ public:
     User(int socket);
     bool    get_autho_status();
     std::string get_buffer();
+    std::string get_ip();
     std::string get_username();
     std::string get_realname();
     std::string get_nickname();
