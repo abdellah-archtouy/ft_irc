@@ -8,6 +8,12 @@ Server::Server()
         std::cerr << "Error creating socket" << std::endl;
         exit(EXIT_FAILURE);
     }
+    int reuseAddr = 1;
+    if (setsockopt(serversocket, SOL_SOCKET, SO_REUSEADDR, &reuseAddr, sizeof(reuseAddr)) == -1) {
+        std::cerr << "Error setting SO_REUSEADDR option" << std::endl;
+        close(serversocket);
+        exit(EXIT_FAILURE);
+    }
 }
 
 int ft_check_param(std::vector<std::string> parameters)
