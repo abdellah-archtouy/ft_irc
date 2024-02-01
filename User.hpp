@@ -30,15 +30,17 @@ private:
     std::string _passW;
     std::string _user;
     std::string buffer;
+    std::string ip_address;
     struct sockaddr_in add;
     std::string chname;
 public:
     User(int socket);
     bool    get_autho_status();
     std::string get_buffer();
+    std::string get_ip();
     std::string get_username();
     std::string get_realname();
-    std::string get_nickname();
+    std::string& get_nickname();
     std::string get_pass();
     void set_chaine(std::string name);
     std::string get_chaine();
@@ -53,5 +55,6 @@ public:
     ~User();
 };
 
+std::map<int, std::string>::iterator findUser(std::string name, std::map<int, std::string> users);
 
 #endif

@@ -1,8 +1,14 @@
 NAME = ircserv
 
-SRC = main.cpp Commands.cpp Server.cpp User.cpp
+SRC =	main.cpp \
+		Commands.cpp \
+		Server.cpp \
+		User.cpp \
+		Commands/join.cpp \
+		Commands/privmsg.cpp \
+		Commands/mode.cpp
 
-INCLUDE = server.hpp user.hpp Channels.hpp
+INCLUDE = server.hpp user.hpp Channels.hpp 
 
 OBJ = $(SRC:%.cpp=%.o)
 
