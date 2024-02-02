@@ -3,7 +3,10 @@
 void addChannel(std::string name, std::vector<Channels> &Ch, std::vector<std::string>& pass) {
     Channels c(name);
     if (pass.size() == 3)
+    {
         c.setPass(pass[2]);
+        c.set_k(true);
+    }
     Ch.push_back(c);
 }
 

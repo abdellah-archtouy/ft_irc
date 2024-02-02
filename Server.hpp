@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <cstring>
+#include <ctime>
 #include <cstdlib>
 #include <sstream>
 #include <unistd.h>
@@ -20,16 +21,14 @@
 #include "User.hpp"
 #include "Channels.hpp"
 
-// #define TOPIC 0
-// #define KICK 1
-// #define MODE 2
-// #define INVITE 3
-// #define JOIN 4
-
-class Channels;
-
-#define RPL_WELCOME(HOST , USER) (HOST  + " 001 " + USER + " :Welcome to the Internet Relay Network user!user@10.11.3.7" + "\r\n")
+#define FORMA(USER , NICK , IP) (NICK  + "!" + USER + "@" + IP)
+#define RPL_WELCOME(HOST , USER , IP) (HOST  + " 001 " + USER + " :Welcome to the Internet Relay Network " + IP + "\r\n")
 #define RPL_NOTOPIC(HOST , USER, CHANNEL) (HOST  + " 331 " + USER + CHANNEL + " :No topic is set" + "\r\n")
+#define RPL_TOPIC(USER, CHANNEL, TOPIC) (USER  + " 332 " + CHANNEL + " :" + TOPIC + "\r\n")
+#define RPL_NAMREPLY(USER, CHANNEL, SYMBOLE, HOST, STRING) (HOST + " 353 " + USER + SYMBOLE + CHANNEL + " :" + STRING + "\r\n")
+#define RPL_ENDOFNAMES(USER, CHANNEL, HOST) (HOST + " 366 " + USER + " " + CHANNEL + " :End of /NAMES list." + "\r\n")
+#define RPL_TOPICWHOTIME(USER, CHANNEL, HOST, NICKUSER, TIME) (HOST + " 333 " + USER + " " + CHANNEL + " " + NICKUSER + " " + TIME + "\r\n")
+
 #define ERR_PASSWDMISMATCH(HOST , USER) (HOST  + " 464 " + USER + " :Password incorrect" + "\r\n")
 #define ERR_NEEDMOREPARAMS(HOST , USER) (HOST  + " 461 " + USER + " :Not enough parameters" + "\r\n")
 #define ERR_NOTREGISTERED(HOST , USER) (HOST  + " 451 " + USER + " :You have not registered" + "\r\n")
@@ -52,6 +51,7 @@ class Channels;
 #define PRIVMSG(NICK, USER, HOST, COMMAND) (":" + NICK  + "!~" + USER + "@" + HOST + " " + COMMAND + "\r\n")
 #define JOIN(NICK, CHANNEL) (":" + NICK  + " JOIN #" + CHANNEL + "\r\n")
 
+class Channels;
 
 class Server
 {

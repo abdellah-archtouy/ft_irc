@@ -10,8 +10,10 @@ class Channels
 {
     private:
         std::string ChaName;
+        std::string time;
         bool i;
         bool t;
+        bool key;
         int limit;
         std::string pass;
         std::string Topic;
@@ -20,20 +22,25 @@ class Channels
     public:
         // list of operators
         // if someone is not a operator and try to execute a command we must make it impossible
-        Channels(std::string ChaName) : ChaName(ChaName) , i(false), t(false), limit(10) {}
+        Channels(std::string ChaName) : ChaName(ChaName) , i(false), t(false), key(false), limit(10) {}
         ~Channels(void) {}
 
-        void setName(std::string name) { this->ChaName = name; }
+        void setName(std::string name) {
+            this->ChaName = name;
+        }
         void setPass(std::string pass) { this->pass = pass; }
         void setUsers(int socket, std::string user) { this->users[socket] = user; }
         void setOper(int socket) { this->operators.push_back(socket); }
         void set_i(bool i) { this->i = i; }
+        void set_k(bool i) { this->key = i; }
         void set_t(bool i) { this->t = i; }
         void set_topic(std::string str) { this->Topic = str; }
         void set_limit(int l) { this->limit = l; }
 
         bool get_t() { return (this->t); }
         bool get_i() { return (this->i); }
+        bool get_k() { return (this->key); }
+        std::string get_time() { return (this->time); }
         std::string getTopic() { return (this->Topic); }
         int getLimit() { return (this->limit); }
         std::string getName() { return (this->ChaName); }
@@ -51,5 +58,6 @@ void mode(std::vector<std::string>command, Server &s, int socket);
 std::map<int, User *>::iterator findFromAllChannels(std::map<int, User *> &clients, std::string nickname);
 int parse_limit(std::string s);
 int parse_key(std::string s);
+// std::string getCurrentTimestamp();
 
 #endif

@@ -12,7 +12,7 @@ INCLUDE = server.hpp user.hpp Channels.hpp
 
 OBJ = $(SRC:%.cpp=%.o)
 
-CPPFALGS =  -std=c++98 -Wall -Wextra -Werror #-g -fsanitize=address 
+CPPFALGS =  -std=c++98 -Wall -Wextra -Werror# -g -fsanitize=address
 
 CC = c++
 
