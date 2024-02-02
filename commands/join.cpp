@@ -45,15 +45,16 @@ void sendJoinMessages(Server &s, int socket, Channels& Ch) {
     send(socket, (":" + forma + " JOIN #" + Ch.getName() + "\r\n").c_str()
         , (":" + forma + " JOIN #" + Ch.getName() + "\r\n").size(), 0);
     std::cout <<":" + forma + " JOIN #" + Ch.getName() + "\r\n" ;
+    int i = howManyMembers(Ch);
+    if (i == 1)
+        Ch.setOper(socket);
     for (std::map<int, std::string>::iterator itr = Ch.getUsers().begin(); itr != Ch.getUsers().end(); ++itr)
         if (std::find(Ch.getOperators().begin(), Ch.getOperators().end(), itr->first) == Ch.getOperators().end())
             users += itr->second + " ";
     for (size_t i = 0; i < Ch.getOperators().size(); i++)
         users += "@" + s.get_clients()[Ch.getOperators()[i]]->get_nickname() + " ";
-    int i = howManyMembers(Ch);
     if (i == 1)
     {
-        Ch.setOper(socket);
         std::string str = "MODE #" + Ch.getName() + " +o " + s.get_clients()[socket]->get_nickname() + "\r\n";
         send(socket, str.c_str(), str.size(), 0);
         tmp = "+";
