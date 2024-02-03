@@ -138,7 +138,7 @@ int Server::ft_check_auten(std::map<int, User *>client, int socket)
         word.clear();
         std::getline(split, word);
     }
-    std::string host = ":e3r2p7.1337.ma";
+    // std::string host = ":e3r2p7.1337.ma";
     if (command[0] != "PASS" && command[0] != "NICK" && command[0] != "USER")
         return send(socket, ERR_NOTREGISTERED(get_host(), clients[socket]->get_username()).c_str(), ERR_NOTREGISTERED(get_host(), clients[socket]->get_username()).size(), 0),1;
     if (command[0] == "PASS")
@@ -175,14 +175,19 @@ int Server::ft_check_auten(std::map<int, User *>client, int socket)
         else if (ft_check_nick(clients, command[1]))
             send(socket, ERR_NICKNAMEINUSE(get_host(), clients[socket]->get_username()).c_str(), ERR_NICKNAMEINUSE(get_host(), clients[socket]->get_username()).size(), 0);
         else 
+        {
             client[socket]->set_nickname(command[1]);
+            std::string tmp = ":" + FORMA(clients[socket]->get_username(), clients[socket]->get_nickname(), clients[socket]->get_ip()) + " NICK " + command[1] + "\r\n";
+            send(socket, tmp.c_str(), tmp.size(), 0);
+        }
     }
+    std::cout << clients[socket]->get_buffer() << std::endl;
     if (client[socket]->get_pass() == "" || client[socket]->get_nickname() == "" || client[socket]->get_username() == "*")
         return 1;
     client[socket]->set_autho_status(true);
     std::cout << "\033[1;32m" << "User Connected " << "\033[0m" << std::endl;
-    send(socket, RPL_WELCOME(get_host(), clients[socket]->get_username(),client[socket]->get_nickname() + "!" + client[socket]->get_username()  + client[socket]->get_ip()).c_str(), RPL_WELCOME(get_host(),
-        clients[socket]->get_username(), client[socket]->get_nickname() + "!" + client[socket]->get_username() + client[socket]->get_ip()).size(), 0);
+    send(socket, RPL_WELCOME(get_host(), clients[socket]->get_nickname(),client[socket]->get_nickname() + "!" + client[socket]->get_username() +"@"  + client[socket]->get_ip()).c_str(), RPL_WELCOME(get_host(),
+        clients[socket]->get_nickname(), client[socket]->get_nickname() + "!" + client[socket]->get_username() +"@"  + client[socket]->get_ip()).size(), 0);
     return 0;
 }
 
@@ -200,10 +205,11 @@ int Server::ft_get_buffer(std::vector<pollfd> &fd, std::map<int , User *> &clien
     if (clients[fd[i].fd]->get_autho_status() == false)
     {
         ft_check_auten(clients, fd[i].fd);
+        // std::cout << clients[fd[i].fd]->get_buffer() << std::endl;
         return 1;
     }
-    std::cout << clients[fd[i].fd]->get_buffer() << std::endl;
     Commands(fd[i].fd);
+    // std::cout << clients[fd[i].fd]->get_buffer() << std::endl;
     // send(fd[i].fd, buffer, bytesRead, 0);
     fd[i].revents = 0;
     return 0;
