@@ -21,7 +21,7 @@
 #include "User.hpp"
 #include "Channels.hpp"
 
-#define FORMA(USER , NICK , IP) (NICK  + "!" + USER + "@" + IP)
+#define FORMA(USER , NICK , IP) (NICK  + "!~" + USER + "@" + IP)
 #define RPL_WELCOME(HOST , USER , IP) (HOST  + " 001 " + USER + " :Welcome to the Internet Relay Network " + IP + "\r\n")
 #define RPL_NOTOPIC(HOST , USER, CHANNEL) (HOST  + " 331 " + USER + CHANNEL + " :No topic is set" + "\r\n")
 #define RPL_TOPIC(USER, CHANNEL, TOPIC) (USER  + " 332 " + CHANNEL + " :" + TOPIC + "\r\n")

@@ -200,9 +200,9 @@ int Server::ft_get_buffer(std::vector<pollfd> &fd, std::map<int , User *> &clien
     if (clients[fd[i].fd]->get_autho_status() == false)
     {
         ft_check_auten(clients, fd[i].fd);
+        std::cout << clients[fd[i].fd]->get_buffer() << std::endl;
         return 1;
     }
-    std::cout << clients[fd[i].fd]->get_buffer() << std::endl;
     Commands(fd[i].fd);
     // send(fd[i].fd, buffer, bytesRead, 0);
     fd[i].revents = 0;
@@ -212,7 +212,7 @@ int Server::ft_get_buffer(std::vector<pollfd> &fd, std::map<int , User *> &clien
 int Server::kick_out_client(std::vector<pollfd> &fds, std::map<int , User *> &clients, int i, std::vector<pollfd>::iterator it)
 {
     if (clients[fds[i].fd]->get_autho_status())
-        std::cout << "\033[1;31m" << "User Desconected " << "\033[0m" << std::endl;
+        std::cout << "\033[1;31m" << "User Disconected " << "\033[0m" << std::endl;
     close(fds[i].fd);
     delete clients[fds[i].fd];
     clients.erase(fds[i].fd);

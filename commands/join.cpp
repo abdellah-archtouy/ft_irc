@@ -39,12 +39,16 @@ void sendMessage(Channels ch, std::string tmp, int socket) {
 void sendJoinMessages(Server &s, int socket, Channels& Ch) {
     std::string tmp;
     std::string users;
+
+    // send(socket, JOIN(s.get_clients()[socket]->get_nickname(), Ch.getName()).c_str()
+    //     , JOIN(s.get_clients()[socket]->get_nickname(), Ch.getName()).size(), 0);
+
     std::stringstream ss(s.get_clients()[socket]->get_username());
     getline(ss, tmp, ' ');
     std::string forma = FORMA(tmp, s.get_clients()[socket]->get_nickname(), s.get_clients()[socket]->get_ip());
     send(socket, (":" + forma + " JOIN #" + Ch.getName() + "\r\n").c_str()
         , (":" + forma + " JOIN #" + Ch.getName() + "\r\n").size(), 0);
-    std::cout <<":" + forma + " JOIN #" + Ch.getName() + "\r\n" ;
+    std::cout << ":" + forma + " JOIN #" + Ch.getName() + "\r\n";
     int i = howManyMembers(Ch);
     if (i == 1)
         Ch.setOper(socket);

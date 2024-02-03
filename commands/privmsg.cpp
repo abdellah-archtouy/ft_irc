@@ -64,7 +64,7 @@ void privMsg(std::vector<std::string> param, Server &s, int socket) {
         return ;
     std::stringstream ss(s.get_clients()[socket]->get_username());
     getline(ss, tmp, ' ');
-    message = PRIVMSG(s.get_clients()[socket]->get_nickname(), tmp, s.get_clients()[socket]->get_ip(), str);
+    message = PRIVMSG(tmp, s.get_clients()[socket]->get_nickname(), s.get_clients()[socket]->get_ip(), str);
     if (param[1][0] == '#')
     {
         std::vector<Channels>::iterator itr = findChaine(param[1].substr(1, param[1].size()), s.Channel);
