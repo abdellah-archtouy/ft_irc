@@ -8,6 +8,8 @@ SRC =	main.cpp \
 		User.cpp \
 		Commands/join.cpp \
 		Commands/privmsg.cpp \
+		Commands/invite.cpp \
+		Commands/topic.cpp \
 		Commands/mode.cpp
 
 SRC_B = Bot.cpp

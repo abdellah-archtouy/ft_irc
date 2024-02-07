@@ -32,7 +32,7 @@ private:
     std::string buffer;
     std::string ip_address;
     struct sockaddr_in add;
-    std::string chname;
+    std::vector<std::string> chname;
 public:
     User(int socket);
     bool    get_autho_status();
@@ -43,7 +43,7 @@ public:
     std::string& get_nickname();
     std::string get_pass();
     void set_chaine(std::string name);
-    std::string get_chaine();
+    std::vector<std::string>& get_chaine();
     struct sockaddr_in get_add();
     void    set_add(struct sockaddr_in);
     void set_autho_status(bool);
@@ -55,6 +55,6 @@ public:
     ~User();
 };
 
-std::map<int, std::string>::iterator findUser(std::string name, std::map<int, std::string> users);
+std::map<int, std::string>::iterator findUser(std::string name, std::map<int, std::string>& users);
 
 #endif

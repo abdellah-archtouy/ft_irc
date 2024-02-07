@@ -21,15 +21,17 @@
 #include "User.hpp"
 #include "Channels.hpp"
 
-#define FORMA(USER , NICK , IP) (NICK  + "!" + USER + "@" + IP)
-#define RPL_WELCOME(HOST , NICK , IP) (HOST  + " 001 " + NICK + " :Welcome to the Internet Relay Network " + IP + "\r\n")
-#define RPL_NOTOPIC(HOST , USER, CHANNEL) (HOST  + " 331 " + USER + CHANNEL + " :No topic is set" + "\r\n")
-#define RPL_TOPIC(USER, CHANNEL, TOPIC) (USER  + " 332 " + CHANNEL + " :" + TOPIC + "\r\n")
+#define FORMA(USER , NICK , IP) (NICK  + "!~" + USER + "@" + IP)
+#define RPL_WELCOME(HOST , USER , IP) (HOST  + " 001 " + USER + " :Welcome to the Internet Relay Network " + IP + "\r\n")
+#define RPL_NOTOPIC(HOST , USER, CHANNEL) (HOST  + " 331 " + USER + " " + CHANNEL + " :No topic is set" + "\r\n")
+#define RPL_TOPIC(HOST, USER, CHANNEL, TOPIC) (":" + HOST + " 332 " + USER + " " + CHANNEL + " :" + TOPIC + "\r\n")
 #define RPL_NAMREPLY(USER, CHANNEL, SYMBOLE, HOST, STRING) (HOST + " 353 " + USER + SYMBOLE + CHANNEL + " :" + STRING + "\r\n")
 #define RPL_ENDOFNAMES(USER, CHANNEL, HOST) (HOST + " 366 " + USER + " " + CHANNEL + " :End of /NAMES list." + "\r\n")
 #define RPL_TOPICWHOTIME(USER, CHANNEL, HOST, NICKUSER, TIME) (HOST + " 333 " + USER + " " + CHANNEL + " " + NICKUSER + " " + TIME + "\r\n")
+#define RPL_CHANNELMODEIS(USER, CHANNEL, HOST, STRING) (HOST + " 324 " + USER + " " + CHANNEL + " " + STRING + "\r\n")
 
 #define ERR_PASSWDMISMATCH(HOST , USER) (HOST  + " 464 " + USER + " :Password incorrect" + "\r\n")
+#define ERR_INVITEONLYCHAN(HOST , USER, CHANNEL) (HOST  + " 473 " + USER + " " + CHANNEL + " :Cannot join channel (+i)" + "\r\n")
 #define ERR_NEEDMOREPARAMS(HOST , USER) (HOST  + " 461 " + USER + " :Not enough parameters" + "\r\n")
 #define ERR_NOTREGISTERED(HOST , USER) (HOST  + " 451 " + USER + " :You have not registered" + "\r\n")
 #define ERR_ALREADYREGISTERED(HOST , USER) (HOST  + " 462 " + USER + " :You may not reregister" + "\r\n")
@@ -43,13 +45,17 @@
 #define ERR_NOSUCHSERVER(HOST , USER, TARG) (HOST  + " 402 " + USER + " " + TARG + " :No such server" + "\r\n")
 #define ERR_NOSUCHCHANNEL(HOST , USER, TARG) (HOST  + " 403 " + USER + " " + TARG + " :No such channel" + "\r\n")
 #define ERR_UNKNOWNCOMMAND(COMMAND , USER) (USER  + " 421 " + COMMAND + " :Unknown command" + "\r\n")
-#define ERR_CHANOPRIVSNEEDED(COMMAND , USER) (USER  + " 482 " + COMMAND + " :You're not channel operator" + "\r\n")
+
+#define ERR_CHANOPRIVSNEEDED(HOST, CHANNEL , USER) (HOST  + " 482 " + USER + " " +  CHANNEL + " :You're not channel operator" + "\r\n")
 #define ERR_UNKNOWNMODE(HOST , USER, CHANNEL) (HOST  + " 472 " + USER + " " + CHANNEL + " :is unknown mode char to me" + "\r\n")
 #define ERR_CHANNELISFULL(HOST , USER, CHANNEL) (HOST  + " 471 " + USER + " " + CHANNEL +  " :Cannot join channel (+l)" + "\r\n")
+#define ERR_NOTONCHANNEL(HOST , USER, CHANNEL) (HOST  + " 442 " + USER + " " + CHANNEL +  " :You're not on that channel" + "\r\n")
+
 #define ERR_NOPRIVILEGES(HOST , USER) (HOST  + " 481 " + USER + " :Permission Denied- You're not an IRC operator" + "\r\n")
+#define ERR_USERONCHANNEL(HOST , USER, NICK, CHANNEL) (HOST  + " 443 " + USER + " " + CHANNEL + " " + NICK + " :is already on channel" + "\r\n")
 
 #define PRIVMSG(NICK, USER, HOST, COMMAND) (":" + NICK  + "!~" + USER + "@" + HOST + " " + COMMAND + "\r\n")
-#define JOIN(NICK, CHANNEL) (":" + NICK  + " JOIN #" + CHANNEL + "\r\n")
+#define JOIN(NICK, CHANNEL) (":" + NICK  + " JOIN " + CHANNEL + "\r\n")
 
 class Channels;
 

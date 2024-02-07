@@ -186,7 +186,7 @@ int Server::ft_check_auten(std::map<int, User *>client, int socket)
     client[socket]->set_autho_status(true);
     std::cout << "\033[1;32m" << "User Connected " << "\033[0m" << std::endl;
     send(socket, RPL_WELCOME(get_host(), clients[socket]->get_nickname(),client[socket]->get_nickname() + "!" + client[socket]->get_username() +"@"  + client[socket]->get_ip()).c_str(), RPL_WELCOME(get_host(),
-        clients[socket]->get_nickname(), client[socket]->get_nickname() + "!" + client[socket]->get_username() +"@"  + client[socket]->get_ip()).size(), 0);
+        clients[socket]->get_nickname(), client[socket]->get_nickname() + "!" + client[socket]->get_username() + "@" + client[socket]->get_ip()).size(), 0);
     return 0;
 }
 
@@ -204,12 +204,9 @@ int Server::ft_get_buffer(std::vector<pollfd> &fd, std::map<int , User *> &clien
     if (clients[fd[i].fd]->get_autho_status() == false)
     {
         ft_check_auten(clients, fd[i].fd);
-        // std::cout << clients[fd[i].fd]->get_buffer() << std::endl;
         return 1;
     }
     Commands(fd[i].fd);
-    // std::cout << clients[fd[i].fd]->get_buffer() << std::endl;
-    // send(fd[i].fd, buffer, bytesRead, 0);
     fd[i].revents = 0;
     return 0;
 }
@@ -217,7 +214,7 @@ int Server::ft_get_buffer(std::vector<pollfd> &fd, std::map<int , User *> &clien
 int Server::kick_out_client(std::vector<pollfd> &fds, std::map<int , User *> &clients, int i, std::vector<pollfd>::iterator it)
 {
     if (clients[fds[i].fd]->get_autho_status())
-        std::cout << "\033[1;31m" << "User Desconected " << "\033[0m" << std::endl;
+        std::cout << "\033[1;31m" << "User Disconected " << "\033[0m" << std::endl;
     close(fds[i].fd);
     delete clients[fds[i].fd];
     clients.erase(fds[i].fd);

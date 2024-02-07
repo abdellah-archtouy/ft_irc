@@ -1,10 +1,12 @@
 #include "../Channels.hpp"
 
-void sendError(std::string str, int socket) {
+void sendError(std::string str, int socket)
+{
     send(socket, str.c_str(), str.size(), 0);
 }
 
-int clientModeArgu(std::vector<std::string> com, int socket, Server &s) {
+int clientModeArgu(std::vector<std::string> com, int socket, Server &s)
+{
     std::string command = com[2];
     if (com.size() != 3)
     {
@@ -27,21 +29,16 @@ int clientModeArgu(std::vector<std::string> com, int socket, Server &s) {
     return 0;
 }
 
-int channelModeArgu(std::vector<std::string> com, int socket, Server &s) {
+int channelModeArgu(std::vector<std::string> com, int socket, Server &s)
+{
     std::string command = com[2];
     if (command[0] != '+' && command[0] != '-')
-    {
-        sendError(ERR_UNKNOWNMODE(s.get_host(), s.get_clients()[socket]->get_nickname(), command), socket);
-        return 1;
-    }
+        return (sendError(ERR_UNKNOWNMODE(s.get_host(), s.get_clients()[socket]->get_nickname(), command), socket), 1);
     for (size_t j = 1; j < command.size(); j++)
     {
-        if (command[j] != 'i' && command[j] != 'k' && command[j] != 't' && command[j] != 'l') // checked
-        {
-            sendError(ERR_UNKNOWNMODE(s.get_host(), s.get_clients()[socket]->get_nickname(), command), socket);
-            return 1;
-        }
-        if (((command[j] == 'k' && command[j] == '+') || command[j] == 'l') && com.size() != 4) // error
+        if (command[j] != 'i' && command[j] != 'k' && command[j] != 't' && command[j] != 'l' && command[j] != 'o') // checked
+            return (sendError(ERR_UNKNOWNMODE(s.get_host(), s.get_clients()[socket]->get_nickname(), command), socket), 1);
+        if (((command[j] == 'k' && command[j] == '+') || command[j] == 'l' || command[j] == 'o') && com.size() != 4) // error
         {
             sendError(ERR_UNKNOWNMODE(s.get_host(), s.get_clients()[socket]->get_nickname(), command), socket);
             return 1;
@@ -60,36 +57,25 @@ int channelModeArgu(std::vector<std::string> com, int socket, Server &s) {
     return 0;
 }
 
-int pareMode(std::vector<std::string> command, int socket, Server &s) {
-    if (command[1][0] == '#')
+int pareMode(std::vector<std::string> command, int socket, Server &s)
+{
+    if (findChaine(command[1], s.Channel) == s.Channel.end())
     {
-        if (findChaine(command[1].substr(1, command[1].size()), s.Channel) == s.Channel.end())
-        {
-            sendError(ERR_NOSUCHCHANNEL(s.get_host(), s.get_clients()[socket]->get_username(), command[1]), socket);
-            return 1;
-        }
-        if (channelModeArgu(command, socket, s))
-            return 1;
+        sendError(ERR_NOSUCHCHANNEL(s.get_host(), s.get_clients()[socket]->get_username(), command[1]), socket);
+        return 1;
     }
-    else
-    {
-        if (findFromAllChannels(s.get_clients(), command[1]) == s.get_clients().end())
-        {
-            sendError(ERR_NOSUCHNICK(s.get_host(), s.get_clients()[socket]->get_nickname(), command[1]), socket);
-            return 1;
-        }
-        if (clientModeArgu(command, socket, s))
-            return 1;
-    }
+    if (channelModeArgu(command, socket, s))
+        return 1;
     return 0;
 }
 
-int parse_key(std::string s) {
+int parse_key(std::string s)
+{
     for (size_t i = 0; i < s.size(); i++)
     {
-        if ((s[i]>=48 && s[i]<=57) ||
-            (s[i]>=65 && s[i]<=90) ||
-            (s[i]>=97 && s[i]<=122))
+        if ((s[i] >= 48 && s[i] <= 57) ||
+            (s[i] >= 65 && s[i] <= 90) ||
+            (s[i] >= 97 && s[i] <= 122))
             continue;
         else
             return 1;
@@ -97,7 +83,8 @@ int parse_key(std::string s) {
     return 0;
 }
 
-int parse_limit(std::string s) {
+int parse_limit(std::string s)
+{
     for (size_t i = 0; i < s.size(); i++)
     {
         if (!isdigit(s[i]))
@@ -106,105 +93,115 @@ int parse_limit(std::string s) {
     return 0;
 }
 
-void executeMode(std::vector<std::string> command, int socket, Server &s) {
-    int r;
-    if (command[1][0] == '#')
+void broadCast(Channels ch, std::string tmp)
+{
+    std::map<int, std::string>::iterator useritr;
+    useritr = ch.getUsers().begin();
+    while (useritr != ch.getUsers().end())
     {
-        std::vector<Channels>::iterator itr = findChaine(command[1].substr(1, command[1].size()), s.Channel);
-        for (size_t i = 2; i < command.size(); i++)
+        send(useritr->first, tmp.c_str(), tmp.size(), 0);
+        ++useritr;
+    }
+}
+
+void executeMode(std::vector<std::string> command, int socket, Server &s)
+{
+    int r;
+    std::string str;
+    std::vector<Channels>::iterator itr = findChaine(command[1], s.Channel);
+    if (itr == s.Channel.end())
+    {
+        str = ERR_NOSUCHCHANNEL(s.get_host(), s.get_clients()[socket]->get_nickname(), command[1]);
+        send(socket, str.c_str(), str.size(), 0);
+        return ;
+    }
+    r = 0;
+    if (command[2][0] == '+')
+        r = 1;
+    if (std::find(itr->getOperators().begin(), itr->getOperators().end(), socket) != itr->getOperators().end())
+    {
+        if (command[2][1] == 'i')
         {
-            r = 0;
-            for (size_t j = 0; j < command[i].size(); j++)
+            if (r)
             {
-                if (command[i][0] == '+')
-                    r = 1;
-                if (std::find(itr->getOperators().begin(), itr->getOperators().end(), socket) != itr->getOperators().end())
+                str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), itr->getName(), s.get_host(), "+i :Channel is invite-only");
+                send(socket, str.c_str(), str.size(), 0);
+                itr->set_i(true);
+            }
+            if (!r)
+                itr->set_i(false);
+        }
+        if (command[2][1] == 't')
+        {
+            if (r)
+            {
+                str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), itr->getName(), s.get_host(), "+t :Channel topic is set");
+                send(socket, str.c_str(), str.size(), 0);
+            }
+                itr->set_t(true);
+            if (!r)
+                itr->set_t(false);
+        }
+        if (command[2][1] == 'k')
+        {
+            if (r)
+            {
+                if (!parse_key(command[3]))
                 {
-                    if (command[i][j] == 'i')
-                    {
-                        if (r)
-                           itr->set_i(true);
-                        if (!r)
-                            itr->set_i(false);
-                    }
-                    if (command[i][j] == 't')
-                    {
-                        if (r)
-                            itr->set_t(true);
-                        if (!r)
-                            itr->set_t(false);
-                    }
-                    if (command[i][j] == 'k')
-                    {
-                        if (r)
-                        {
-                            if (parse_key(command[i + 1]))
-                                itr->setPass(command[i + 1]);
-                            i++;
-                        }
-                        if (!r)
-                            itr->setPass("");
-                    }
-                    if (command[i][j] == 'l')
-                    {
-                        if (r)
-                        {
-                            if (!parse_limit(command[i]))
-                                itr->set_limit(atoi(command[i + 1].c_str()));
-                            else
-                            {
-                                sendError(ERR_UNKNOWNMODE(s.get_host(), s.get_clients()[socket]->get_nickname(), command[1].substr(1, command[1].size())), socket);
-                                return ;
-                            }
-                            i++;
-                        }
-                        if (!r)
-                            itr->set_topic("");
-                    }
+                    itr->setPass(command[3]);
+                    str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), itr->getName(), s.get_host(), ("+k secret_key :Channel key set to `" + command[3] + "`"));
+                    send(socket, str.c_str(), str.size(), 0);
+                }
+            }
+            if (!r)
+                itr->setPass("");
+        }
+        if (command[2][1] == 'l')
+        {
+            if (r)
+            {
+                if (!parse_limit(command[3]))
+                {
+                    itr->set_limit(atoi(command[3].c_str()));
+                    str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), itr->getName(), s.get_host(), ("+l user limit :Channel user limit set to `" + command[3] + "`"));
+                    sendError(str, socket);
                 }
                 else
                 {
-                    if (std::find(itr->getOperators().begin(), itr->getOperators().end(), socket) == itr->getOperators().end())
-                        sendError(ERR_NOPRIVILEGES(s.get_host(), s.get_clients()[socket]->get_nickname()), socket);
-                    return ;
+                    sendError(ERR_UNKNOWNMODE(s.get_host(), s.get_clients()[socket]->get_nickname(), command[3]), socket);
+                    return;
                 }
+            }
+            if (!r)
+                itr->set_topic("");
+        }
+        if (command[2][1] == 'o')
+        {
+            std::map<int, std::string>::iterator Useritr = findUser(command[3], itr->getUsers());
+            if (Useritr == itr->getUsers().end())
+            {
+                str = ERR_NOSUCHNICK(s.get_host(), s.get_clients()[socket]->get_nickname(), command[3]);
+                sendError(str, socket);
+                return ;
+            }
+            if (r)
+            {
+                itr->setOper(Useritr->first);
+                broadCast(*itr, ("MODE " + itr->getName() + " +o " + command[3] + "\r\n"));
+            }
+            if (!r)
+            {
+                itr->getOperators().erase(std::find(itr->getOperators().begin(), itr->getOperators().end(), Useritr->first));
+                broadCast(*itr, ("MODE " + itr->getName() + " -o " + command[3] + "\r\n"));
             }
         }
     }
     else
-    {
-        std::map<int, User*>::iterator Useritr = findFromAllChannels(s.get_clients(), command[1]);
-        std::vector<Channels>::iterator itr = findChaine(s.get_clients()[socket]->get_chaine(), s.Channel);
-        for (size_t i = 2; i < command.size(); i++)
-        {
-            r = 0;
-            if (command[i][0] == '+')
-                r = 1;
-            for (size_t j = 1; j < command[i].size(); j++)
-            {
-                if (s.get_clients()[Useritr->first]->get_chaine() == s.get_clients()[socket]->get_chaine()
-                    && std::find(itr->getOperators().begin(), itr->getOperators().end(), socket) != itr->getOperators().end())
-                {
-                    if (command[i][j] == 'o')
-                    {
-                        if (r)
-                            itr->setOper(Useritr->first);
-                        if (!r)
-                            itr->getOperators().erase(std::find(itr->getOperators().begin(), itr->getOperators().end(), Useritr->first));
-                    }
-                }
-                else
-                {
-                    if (std::find(itr->getOperators().begin(), itr->getOperators().end(), socket) == itr->getOperators().end())
-                        sendError(ERR_NOPRIVILEGES(s.get_host(), s.get_clients()[socket]->get_nickname()), socket);
-                    return ;
-                }
-            }
-        }
-    }
+        sendError(ERR_CHANOPRIVSNEEDED(s.get_host(), s.get_clients()[socket]->get_nickname(), itr->getName()), socket);
 }
 
-void mode(std::vector<std::string>command, Server &s, int socket) {
+void mode(std::vector<std::string> command, Server &s, int socket)
+{
     if (pareMode(command, socket, s))
         return;
     executeMode(command, socket, s);

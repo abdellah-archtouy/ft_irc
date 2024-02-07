@@ -24,7 +24,7 @@ int privMsgParsing(std::vector<std::string> param, Server &s, int socket, std::s
     }
     if (param[1][0] == '#')
     {
-        std::vector<Channels>::iterator itr = findChaine(param[1].substr(1, param[1].size()), s.Channel);
+        std::vector<Channels>::iterator itr = findChaine(param[1], s.Channel);
         if (itr == s.Channel.end())
         {
             str = ERR_NOSUCHCHANNEL(s.get_host(), s.get_clients()[socket]->get_username(), param[1]);
@@ -67,8 +67,9 @@ void privMsg(std::vector<std::string> param, Server &s, int socket) {
     message = PRIVMSG(s.get_clients()[socket]->get_nickname(), tmp, s.get_clients()[socket]->get_ip(), str);
     if (param[1][0] == '#')
     {
-        std::vector<Channels>::iterator itr = findChaine(param[1].substr(1, param[1].size()), s.Channel);
-        if (itr->getName() == s.get_clients()[socket]->get_chaine())
+        std::vector<Channels>::iterator itr = findChaine(param[1], s.Channel);
+        if (std::find(s.get_clients()[socket]->get_chaine().begin(), s.get_clients()[socket]->get_chaine().end(), itr->getName())
+            != s.get_clients()[socket]->get_chaine().end())
             for (userInChItr = itr->getUsers().begin(); userInChItr != itr->getUsers().end(); ++userInChItr)
                 if (userInChItr->first != socket)
                     send(userInChItr->first, message.c_str(), message.size(), 0);

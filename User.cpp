@@ -95,10 +95,10 @@ std::string User::get_pass()
 }
 
 void User::set_chaine(std::string name) {
-    this->chname = name;
+    this->chname.push_back(name);
 }
 
-std::string User::get_chaine() {
+std::vector<std::string>& User::get_chaine() {
     return this->chname;
 }
 
@@ -106,7 +106,7 @@ std::string User::get_ip() {
     return ip_address;
 }
 
-std::map<int, std::string>::iterator findUser(std::string name, std::map<int, std::string> users) {
+std::map<int, std::string>::iterator findUser(std::string name, std::map<int, std::string>& users) {
     std::map<int, std::string>::iterator itr;
     for (itr = users.begin(); itr != users.end(); ++itr)
         if (itr->second == name)

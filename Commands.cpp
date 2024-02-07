@@ -32,6 +32,7 @@ void Server::Commands(int socket) {
     std::string tmp;
     if (str.empty())
         return ;
+    std::cout << str << std::endl;
     while (getline(ss, tmp, ' '))
         command.push_back(tmp);
     if (command[0] == "JOIN")
@@ -40,6 +41,10 @@ void Server::Commands(int socket) {
         privMsg(command, *this, socket);
     else if (command[0] == "MODE")
         mode(command, *this, socket);
+    else if (command[0] == "INVITE")
+        invite(command, *this, socket);
+    else if (command[0] == "TOPIC")
+        topic(command, *this, socket);
 }
 
 /*ghad idir les command camlin 3ad ghadi nhandliw les messages*/
