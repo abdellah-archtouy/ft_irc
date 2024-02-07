@@ -20,8 +20,6 @@ class Channels
         std::map<int, std::string> users;
         std::vector<int> operators;
     public:
-        // list of operators
-        // if someone is not a operator and try to execute a command we must make it impossible
         Channels(std::string ChaName) : ChaName(ChaName) , i(false), t(false), key(false), limit(10) {}
         ~Channels(void) {}
 
@@ -47,17 +45,22 @@ class Channels
         std::vector<int> &getOperators() { return (this->operators); }
         std::map<int, std::string>& getUsers() { return users; }
         std::string getPass() { return pass; }
-        /*  implement Commands as methods    */
 };
 
 void join(int socket, Server& s, std::map<int , User *> &clients, std::vector<std::string> &command);
-void addChannel(std::string name, std::vector<Channels> &Ch, std::vector<std::string>& pass);
-std::vector<Channels>::iterator findChaine(std::string name, std::vector<Channels> &Ch);
 void privMsg(std::vector<std::string> param, Server &s, int socket);
 void mode(std::vector<std::string>command, Server &s, int socket);
+void invite(std::vector<std::string> command, Server &s, int socket);
+std::vector<Channels>::iterator findChaine(std::string name, std::vector<Channels> &Ch);
 std::map<int, User *>::iterator findFromAllChannels(std::map<int, User *> &clients, std::string nickname);
+void addChannel(std::string name, std::vector<Channels> &Ch, std::vector<std::string>& pass);
 int parse_limit(std::string s);
 int parse_key(std::string s);
+void sendMessage(Channels ch, std::string tmp, int socket);
+void broadCast(Channels ch, std::string tmp);
+void sendError(std::string str, int socket);
+void sendJoinMessages(Server &s, int socket, Channels& Ch);
+void topic(std::vector<std::string> command, Server &s, int socket);
 // std::string getCurrentTimestamp();
 
 #endif

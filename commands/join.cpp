@@ -40,15 +40,11 @@ void sendJoinMessages(Server &s, int socket, Channels& Ch) {
     std::string tmp;
     std::string users;
 
-    // send(socket, JOIN(s.get_clients()[socket]->get_nickname(), Ch.getName()).c_str()
-    //     , JOIN(s.get_clients()[socket]->get_nickname(), Ch.getName()).size(), 0);
-
     std::stringstream ss(s.get_clients()[socket]->get_username());
     getline(ss, tmp, ' ');
-    std::string forma = FORMA(tmp, s.get_clients()[socket]->get_nickname(), s.get_clients()[socket]->get_ip());
-    send(socket, (":" + forma + " JOIN #" + Ch.getName() + "\r\n").c_str()
-        , (":" + forma + " JOIN #" + Ch.getName() + "\r\n").size(), 0);
-    std::cout << ":" + forma + " JOIN #" + Ch.getName() + "\r\n";
+    std::string forma = FORMA(s.get_clients()[socket]->get_username(), s.get_clients()[socket]->get_nickname(), s.get_clients()[socket]->get_ip());
+    send(socket, (":" + forma + " JOIN " + Ch.getName() + "\r\n").c_str()
+        , (":" + forma + " JOIN " + Ch.getName() + "\r\n").size(), 0);
     int i = howManyMembers(Ch);
     if (i == 1)
         Ch.setOper(socket);
@@ -59,7 +55,7 @@ void sendJoinMessages(Server &s, int socket, Channels& Ch) {
         users += "@" + s.get_clients()[Ch.getOperators()[i]]->get_nickname() + " ";
     if (i == 1)
     {
-        std::string str = "MODE #" + Ch.getName() + " +o " + s.get_clients()[socket]->get_nickname() + "\r\n";
+        std::string str = "MODE " + Ch.getName() + " +o " + s.get_clients()[socket]->get_nickname() + "\r\n";
         send(socket, str.c_str(), str.size(), 0);
         tmp = "+";
         if (Ch.get_i())
@@ -68,16 +64,17 @@ void sendJoinMessages(Server &s, int socket, Channels& Ch) {
             tmp += "t";
         if (Ch.get_k())
             tmp += "k";
+        str = s.get_host() + " MODE " + Ch.getName() + " " + tmp + "\r\n";
         if (tmp.size() > 1)
-            send(socket, (s.get_host() + " MODE #" + Ch.getName() + " " + tmp + "\r\n").c_str(),
-                (s.get_host() + " MODE #" + Ch.getName() + " " + tmp + "\r\n").size(), 0);
+            send(socket, str.c_str(), str.size(), 0);
     }
     if (i > 1)
     {
         if (!Ch.getTopic().empty())
-            tmp = RPL_TOPIC(s.get_clients()[socket]->get_nickname(), Ch.getName(), Ch.getTopic());
+            tmp = RPL_TOPIC(forma, s.get_clients()[socket]->get_nickname(), Ch.getName(), Ch.getTopic());
         else
-            tmp = RPL_NOTOPIC(s.get_host(), s.get_clients()[socket]->get_nickname(), Ch.getTopic());
+            tmp = RPL_NOTOPIC(s.get_host(), s.get_clients()[socket]->get_nickname(), Ch.getName());
+        std::cout << tmp;
         send(socket, tmp.c_str(), tmp.size(), 0);
         if (!Ch.getTopic().empty())
         {
@@ -89,7 +86,7 @@ void sendJoinMessages(Server &s, int socket, Channels& Ch) {
     send(socket, tmp.c_str(), tmp.size(), 0);
     tmp = RPL_ENDOFNAMES(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host());
     send(socket, tmp.c_str(), tmp.size(), 0);
-    sendMessage(Ch, (forma + " JOIN :#" + Ch.getName() + "\r\n"), socket);
+    sendMessage(Ch, (":" + forma + " JOIN :" + Ch.getName() + "\r\n"), socket);
 }
 
 void join(int socket, Server& s, std::map<int , User *> &clients, std::vector<std::string> &command) {
@@ -98,11 +95,17 @@ void join(int socket, Server& s, std::map<int , User *> &clients, std::vector<st
     std::string tmp;
     if (!ParseJoin(command))
     {
-        tmp = command[1].substr(1, command[1].size() - 1);
-        if (findChaine(tmp, s.Channel) == s.Channel.end())
-            addChannel(tmp, s.Channel, command);
-        itrchaine = findChaine(tmp, s.Channel);
-        if (itrchaine->getName() == s.get_clients()[socket]->get_chaine())
+        if (findChaine(command[1], s.Channel) == s.Channel.end())
+            addChannel(command[1], s.Channel, command);
+        itrchaine = findChaine(command[1], s.Channel);
+        if (itrchaine->get_i())
+        {
+            send(socket, ERR_INVITEONLYCHAN(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).c_str(),
+                ERR_INVITEONLYCHAN(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).size(), 0);
+            return ;
+        }
+        if (std::find(s.get_clients()[socket]->get_chaine().begin(), s.get_clients()[socket]->get_chaine().end(), itrchaine->getName())
+            != s.get_clients()[socket]->get_chaine().end())
             return ;
         if (!itrchaine->getPass().empty() && itrchaine->getPass() != command[2])
         {
