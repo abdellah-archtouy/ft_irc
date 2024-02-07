@@ -181,7 +181,6 @@ int Server::ft_check_auten(std::map<int, User *>client, int socket)
             send(socket, tmp.c_str(), tmp.size(), 0);
         }
     }
-    std::cout << clients[socket]->get_buffer() << std::endl;
     if (client[socket]->get_pass() == "" || client[socket]->get_nickname() == "" || client[socket]->get_username() == "*")
         return 1;
     client[socket]->set_autho_status(true);

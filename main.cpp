@@ -32,6 +32,7 @@ int main(int ac, char **av)
         }
         std::cout << "Server listening on port " << av[1] << std::endl;
         signal(SIGINT, handler);
+        signal(SIGPIPE, SIG_IGN);
         server.binding(line);
         server.polling();
     }
