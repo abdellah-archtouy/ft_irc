@@ -93,7 +93,7 @@ int parse_limit(std::string s)
     return 0;
 }
 
-void broadCast(Channels ch, std::string tmp)
+void broadCast(Channels& ch, std::string tmp)
 {
     std::map<int, std::string>::iterator useritr;
     useritr = ch.getUsers().begin();
@@ -163,6 +163,7 @@ void executeMode(std::vector<std::string> command, int socket, Server &s)
                 if (!parse_limit(command[3]))
                 {
                     itr->set_limit(atoi(command[3].c_str()));
+                    itr->set_l(true);
                     str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), itr->getName(), s.get_host(), ("+l user limit :Channel user limit set to `" + command[3] + "`"));
                     sendError(str, socket);
                 }

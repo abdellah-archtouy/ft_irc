@@ -10,6 +10,8 @@ SRC =	main.cpp \
 		Commands/privmsg.cpp \
 		Commands/invite.cpp \
 		Commands/topic.cpp \
+		Commands/kick.cpp \
+		Commands/part.cpp \
 		Commands/mode.cpp
 
 SRC_B = Bot.cpp
@@ -22,7 +24,7 @@ OBJ = $(SRC:%.cpp=%.o)
 
 OBJ_B = $(SRC_B:%.cpp=%.o)
 
-CPPFALGS =  -std=c++98 -Wall -Wextra -Werror# -g -fsanitize=address
+CPPFALGS =  -std=c++98 -Wall -Wextra -Werror -g -fsanitize=address
 
 CC = c++
 

@@ -26,7 +26,7 @@
 #define RPL_NOTOPIC(HOST , USER, CHANNEL) (HOST  + " 331 " + USER + " " + CHANNEL + " :No topic is set" + "\r\n")
 #define RPL_TOPIC(HOST, USER, CHANNEL, TOPIC) (":" + HOST + " 332 " + USER + " " + CHANNEL + " :" + TOPIC + "\r\n")
 #define RPL_NAMREPLY(USER, CHANNEL, SYMBOLE, HOST, STRING) (HOST + " 353 " + USER + SYMBOLE + CHANNEL + " :" + STRING + "\r\n")
-#define RPL_ENDOFNAMES(USER, CHANNEL, HOST) (HOST + " 366 " + USER + " " + CHANNEL + " :End of /NAMES list." + "\r\n")
+#define RPL_ENDOFNAMES(USER, CHANNEL, HOST) (HOST + " 366 " + USER + " " + CHANNEL + " :End of NAMES list" + "\r\n")
 #define RPL_TOPICWHOTIME(USER, CHANNEL, HOST, NICKUSER, TIME) (HOST + " 333 " + USER + " " + CHANNEL + " " + NICKUSER + " " + TIME + "\r\n")
 #define RPL_CHANNELMODEIS(USER, CHANNEL, HOST, STRING) (HOST + " 324 " + USER + " " + CHANNEL + " " + STRING + "\r\n")
 
@@ -45,6 +45,7 @@
 #define ERR_NOSUCHSERVER(HOST , USER, TARG) (HOST  + " 402 " + USER + " " + TARG + " :No such server" + "\r\n")
 #define ERR_NOSUCHCHANNEL(HOST , USER, TARG) (HOST  + " 403 " + USER + " " + TARG + " :No such channel" + "\r\n")
 #define ERR_UNKNOWNCOMMAND(COMMAND , USER) (USER  + " 421 " + COMMAND + " :Unknown command" + "\r\n")
+#define ERR_USERNOTINCHANNEL(HOST, USER, CHANNEL, TARGET) (HOST  + " 441 " + USER + " " + CHANNEL + " " + TARGET + " :They aren't on that channel" + "\r\n")
 
 #define ERR_CHANOPRIVSNEEDED(HOST, CHANNEL , USER) (HOST  + " 482 " + USER + " " +  CHANNEL + " :You're not channel operator" + "\r\n")
 #define ERR_UNKNOWNMODE(HOST , USER, CHANNEL) (HOST  + " 472 " + USER + " " + CHANNEL + " :is unknown mode char to me" + "\r\n")
@@ -56,6 +57,8 @@
 
 #define PRIVMSG(NICK, USER, HOST, COMMAND) (":" + NICK  + "!~" + USER + "@" + HOST + " " + COMMAND + "\r\n")
 #define JOIN(NICK, CHANNEL) (":" + NICK  + " JOIN " + CHANNEL + "\r\n")
+#define KICK(HOSTMASK, CHANNEL, TARGET, REASON) (":" + HOSTMASK + " KICK " + CHANNEL + " " + TARGET + " " + REASON + "\r\n")
+#define PART(HOSTMASK, CHANNEL, TARGET, REASON) (":" + HOSTMASK + " PART " + CHANNEL + " " + REASON + "\r\n")
 
 class Channels;
 

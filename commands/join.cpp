@@ -36,12 +36,27 @@ void sendMessage(Channels ch, std::string tmp, int socket) {
 //     return timestamp;
 // }
 
+void	ft_putnbr(std::time_t n, std::string &str)
+{
+	if (n < 0)
+	{
+		str += "-";
+		n *= -1;
+	}
+	if (n >= 10)
+	{
+		ft_putnbr((n / 10), str);
+		ft_putnbr((n % 10), str);
+	}
+	if (n >= 0 && n < 10)
+		str += n + 48;
+}
+
 void sendJoinMessages(Server &s, int socket, Channels& Ch) {
     std::string tmp;
+    std::string c;
     std::string users;
 
-    std::stringstream ss(s.get_clients()[socket]->get_username());
-    getline(ss, tmp, ' ');
     std::string forma = FORMA(s.get_clients()[socket]->get_username(), s.get_clients()[socket]->get_nickname(), s.get_clients()[socket]->get_ip());
     send(socket, (":" + forma + " JOIN " + Ch.getName() + "\r\n").c_str()
         , (":" + forma + " JOIN " + Ch.getName() + "\r\n").size(), 0);
@@ -51,8 +66,9 @@ void sendJoinMessages(Server &s, int socket, Channels& Ch) {
     for (std::map<int, std::string>::iterator itr = Ch.getUsers().begin(); itr != Ch.getUsers().end(); ++itr)
         if (std::find(Ch.getOperators().begin(), Ch.getOperators().end(), itr->first) == Ch.getOperators().end())
             users += itr->second + " ";
-    for (size_t i = 0; i < Ch.getOperators().size(); i++)
-        users += "@" + s.get_clients()[Ch.getOperators()[i]]->get_nickname() + " ";
+    size_t j = Ch.getOperators().size();
+    for (size_t i = 0; i < j; i++)
+            users += "@" + s.get_clients()[Ch.getOperators()[i]]->get_nickname() + " ";
     if (i == 1)
     {
         std::string str = "MODE " + Ch.getName() + " +o " + s.get_clients()[socket]->get_nickname() + "\r\n";
@@ -67,6 +83,7 @@ void sendJoinMessages(Server &s, int socket, Channels& Ch) {
         str = s.get_host() + " MODE " + Ch.getName() + " " + tmp + "\r\n";
         if (tmp.size() > 1)
             send(socket, str.c_str(), str.size(), 0);
+        c = " = ";
     }
     if (i > 1)
     {
@@ -74,17 +91,21 @@ void sendJoinMessages(Server &s, int socket, Channels& Ch) {
             tmp = RPL_TOPIC(forma, s.get_clients()[socket]->get_nickname(), Ch.getName(), Ch.getTopic());
         else
             tmp = RPL_NOTOPIC(s.get_host(), s.get_clients()[socket]->get_nickname(), Ch.getName());
-        std::cout << tmp;
         send(socket, tmp.c_str(), tmp.size(), 0);
         if (!Ch.getTopic().empty())
         {
-            tmp = RPL_TOPICWHOTIME(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host(), forma, Ch.get_time());
+            std::string str;
+            ft_putnbr(Ch.get_timestamp(), str);
+            tmp = RPL_TOPICWHOTIME(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host(), Ch.get_topicSetter(), str);
             send(socket, tmp.c_str(), tmp.size(), 0);
         }
+        c = " @ ";
     }
-    tmp = RPL_NAMREPLY(s.get_clients()[socket]->get_nickname(), Ch.getName(), " @ ", s.get_host(), users);
+    tmp = RPL_NAMREPLY(s.get_clients()[socket]->get_nickname(), Ch.getName(), c, s.get_host(), users);
+    std::cout << tmp;
     send(socket, tmp.c_str(), tmp.size(), 0);
     tmp = RPL_ENDOFNAMES(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host());
+    std::cout << tmp;
     send(socket, tmp.c_str(), tmp.size(), 0);
     sendMessage(Ch, (":" + forma + " JOIN :" + Ch.getName() + "\r\n"), socket);
 }
@@ -112,7 +133,7 @@ void join(int socket, Server& s, std::map<int , User *> &clients, std::vector<st
             send(socket, ERR_BADCHANNELKEY(s.get_host(), clients[socket]->get_nickname()).c_str(), ERR_BADCHANNELKEY(s.get_host(), clients[socket]->get_nickname()).size(), 0);
             return ;
         }
-        if (howManyMembers(*itrchaine) >= itrchaine->getLimit())
+        if (itrchaine->get_l() && howManyMembers(*itrchaine) >= itrchaine->getLimit())
         {
             send(socket, ERR_CHANNELISFULL(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).c_str(), ERR_CHANNELISFULL(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).size(), 0);
             return ;
