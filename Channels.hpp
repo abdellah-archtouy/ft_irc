@@ -10,17 +10,19 @@ class Channels
 {
     private:
         std::string ChaName;
-        std::string time;
+        std::string topicSetter;
         bool i;
         bool t;
+        bool l;
         bool key;
         int limit;
         std::string pass;
         std::string Topic;
         std::map<int, std::string> users;
         std::vector<int> operators;
+        std::time_t timestamp;
     public:
-        Channels(std::string ChaName) : ChaName(ChaName) , i(false), t(false), key(false), limit(10) {}
+        Channels(std::string ChaName) : ChaName(ChaName) , i(false), t(false), l(false), key(false) {}
         ~Channels(void) {}
 
         void setName(std::string name) {
@@ -32,13 +34,18 @@ class Channels
         void set_i(bool i) { this->i = i; }
         void set_k(bool i) { this->key = i; }
         void set_t(bool i) { this->t = i; }
+        void set_l(bool i) { this->l = i; }
+        void set_timestamp(std::time_t i) { this->timestamp = i; }
         void set_topic(std::string str) { this->Topic = str; }
         void set_limit(int l) { this->limit = l; }
+        void set_topicSetter(std::string t) { this->topicSetter = t; }
 
         bool get_t() { return (this->t); }
+        std::string get_topicSetter() { return (this->topicSetter); }
         bool get_i() { return (this->i); }
         bool get_k() { return (this->key); }
-        std::string get_time() { return (this->time); }
+        bool get_l() { return (this->l); }
+        std::time_t get_timestamp() { return this->timestamp; }
         std::string getTopic() { return (this->Topic); }
         int getLimit() { return (this->limit); }
         std::string getName() { return (this->ChaName); }
@@ -57,10 +64,12 @@ void addChannel(std::string name, std::vector<Channels> &Ch, std::vector<std::st
 int parse_limit(std::string s);
 int parse_key(std::string s);
 void sendMessage(Channels ch, std::string tmp, int socket);
-void broadCast(Channels ch, std::string tmp);
+void broadCast(Channels& ch, std::string tmp);
 void sendError(std::string str, int socket);
 void sendJoinMessages(Server &s, int socket, Channels& Ch);
 void topic(std::vector<std::string> command, Server &s, int socket);
+void kick(std::vector<std::string> command, Server &s, int socket);
+void part(std::vector<std::string> command, Server &s, int socket);
 // std::string getCurrentTimestamp();
 
 #endif

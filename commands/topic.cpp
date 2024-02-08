@@ -20,13 +20,23 @@ void topic(std::vector<std::string> command, Server &s, int socket) {
         else
             return sendError(RPL_TOPIC(forma, s.get_clients()[socket]->get_nickname(), itr->getName(), itr->getTopic()), socket);
     }
-    if (command[2][0] != ':') // here we set the topic we may clear it or gives it a value
+    if (command[2][0] != ':' && command.size() > 3) // here we set the topic we may clear it or gives it a value
         return sendError(ERR_NEEDMOREPARAMS(s.get_host(), s.get_clients()[socket]->get_nickname()), socket);
-    std::string topic = command[2].substr(1, command.size()) + " ";
+    
+    std::string topic = command[2];
+    if (command[2][0] == ':')
+        topic = command[2].substr(1, command[2].size()) + " ";
     for (size_t i = 3; i < command.size(); i++)
         topic += command[i] + " ";
-    if (topic.size() == 1)
+    if (topic.size() == 2 && topic[0] == ':')
         itr->set_topic("");
     else
+    {
         itr->set_topic(topic);
+        itr->set_topicSetter(s.get_clients()[socket]->get_nickname());
+        itr->set_timestamp(std::time(NULL));
+    }
+    std::string message = ":" + forma + " TOPIC " + itr->getName() + " :" + itr->getTopic() + "\r\n";
+    std::cout << message;
+    broadCast(*itr, message);
 }
