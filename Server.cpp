@@ -24,6 +24,9 @@ int ft_check_param(std::vector<std::string> parameters)
         if (!isdigit(port[i]))
             return 1;
     }
+    int a = atoi(port.c_str());
+    if (a < 1024 || a > 65535)
+        return 1;
     return (0);
 }
 
@@ -103,6 +106,8 @@ int ft_chek_user(std::string user)
     if(word != "*")
         return (1);
     a >> word;
+    if(word == "*")
+        return (1);
     return 0;
 }
 std::string ft_get_username(std::string user)
@@ -138,7 +143,6 @@ int Server::ft_check_auten(std::map<int, User *>client, int socket)
         word.clear();
         std::getline(split, word);
     }
-    // std::string host = ":e3r2p7.1337.ma";
     if (command[0] != "PASS" && command[0] != "NICK" && command[0] != "USER")
         return send(socket, ERR_NOTREGISTERED(get_host(), clients[socket]->get_username()).c_str(), ERR_NOTREGISTERED(get_host(), clients[socket]->get_username()).size(), 0),1;
     if (command[0] == "PASS")
@@ -175,11 +179,7 @@ int Server::ft_check_auten(std::map<int, User *>client, int socket)
         else if (ft_check_nick(clients, command[1]))
             send(socket, ERR_NICKNAMEINUSE(get_host(), clients[socket]->get_username()).c_str(), ERR_NICKNAMEINUSE(get_host(), clients[socket]->get_username()).size(), 0);
         else 
-        {
             client[socket]->set_nickname(command[1]);
-            std::string tmp = ":" + FORMA(clients[socket]->get_username(), clients[socket]->get_nickname(), clients[socket]->get_ip()) + " NICK " + command[1] + "\r\n";
-            send(socket, tmp.c_str(), tmp.size(), 0);
-        }
     }
     if (client[socket]->get_pass() == "" || client[socket]->get_nickname() == "" || client[socket]->get_username() == "*")
         return 1;

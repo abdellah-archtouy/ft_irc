@@ -1,7 +1,6 @@
 import socket
 import threading
 import time
-
 # Informations de connexion au serveur IRC
 server_ip = "localhost"
 server_port = 8080
@@ -31,6 +30,7 @@ def connect_irc(nick):
     irc_socket.send("JOIN #tee\r\n".format(nick).encode())
     time.sleep(0.01)
     irc_socket.send("JOIN #teee\r\n".format(nick).encode())
+    time.sleep(0.0001)
 
     while True:
         message = irc_socket.recv(2048).decode()
