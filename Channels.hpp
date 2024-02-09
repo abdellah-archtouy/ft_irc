@@ -60,7 +60,7 @@ void mode(std::vector<std::string>command, Server &s, int socket);
 void invite(std::vector<std::string> command, Server &s, int socket);
 std::vector<Channels>::iterator findChaine(std::string name, std::vector<Channels> &Ch);
 std::map<int, User *>::iterator findFromAllChannels(std::map<int, User *> &clients, std::string nickname);
-void addChannel(std::string name, std::vector<Channels> &Ch, std::vector<std::string>& pass);
+void addChannel(std::vector<Channels> &Ch, std::map<std::string, std::string>::iterator itr);
 int parse_limit(std::string s);
 int parse_key(std::string s);
 void sendMessage(Channels ch, std::string tmp, int socket);
@@ -70,6 +70,7 @@ void sendJoinMessages(Server &s, int socket, Channels& Ch);
 void topic(std::vector<std::string> command, Server &s, int socket);
 void kick(std::vector<std::string> command, Server &s, int socket);
 void part(std::vector<std::string> command, Server &s, int socket);
+int howManyMembers(Channels &ch);
 // std::string getCurrentTimestamp();
 
 #endif

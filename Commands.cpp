@@ -1,10 +1,10 @@
 #include "Server.hpp"
 
-void addChannel(std::string name, std::vector<Channels> &Ch, std::vector<std::string>& pass) {
-    Channels c(name);
-    if (pass.size() == 3)
+void addChannel(std::vector<Channels> &Ch, std::map<std::string, std::string>::iterator itr) {
+    Channels c(itr->first);
+    if (!itr->second.empty())
     {
-        c.setPass(pass[2]);
+        c.setPass(itr->second);
         c.set_k(true);
     }
     Ch.push_back(c);

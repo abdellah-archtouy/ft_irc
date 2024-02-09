@@ -215,6 +215,12 @@ int Server::kick_out_client(std::vector<pollfd> &fds, std::map<int , User *> &cl
 {
     if (clients[fds[i].fd]->get_autho_status())
         std::cout << "\033[1;31m" << "User Disconected " << "\033[0m" << std::endl;
+    std::map<int, std::string>::iterator kick;
+    for (size_t j = 0; j < clients[fds[i].fd]->get_chaine().size(); j++)
+    {
+        if (findChaine(clients[fds[i].fd]->get_chaine()[j], this->Channel) != this->Channel.end())
+            this->Channel.erase(findChaine(clients[fds[i].fd]->get_chaine()[j], this->Channel));
+    }
     close(fds[i].fd);
     delete clients[fds[i].fd];
     clients.erase(fds[i].fd);

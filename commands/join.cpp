@@ -1,10 +1,35 @@
 #include "../Channels.hpp"
 
-int ParseJoin(std::vector<std::string> &command) {
+int ParseJoin(std::vector<std::string> &command, std::map<std::string, std::string> &ChandKey) {
     if (command.size() < 2 || command.size() > 3)
         return 1;
-    if (command[1][0] != '#')
+    std::stringstream ss(command[1]);
+    std::string tmp;
+    std::vector<std::string> channel;
+    std::vector<std::string> key;
+    while (getline(ss, tmp, ','))
+    {
+        channel.push_back(tmp);
+        tmp.clear();
+    }
+    if (command.size() == 3 && strchr(command[2].c_str(), ','))
+    {
+        std::stringstream w(command[2]);
+        while (getline(w, tmp, ','))
+        {
+            key.push_back(tmp);
+            tmp.clear();
+        }
+    }
+    if (channel.size() < key.size())
         return 1;
+    for (size_t i = 0; i < channel.size(); i++)
+    {
+        if (i < key.size())
+            ChandKey[channel[i]] = key[i];
+        else
+            ChandKey[channel[i]] = "";
+    }
     return 0;
 }
 
@@ -102,10 +127,8 @@ void sendJoinMessages(Server &s, int socket, Channels& Ch) {
         c = " @ ";
     }
     tmp = RPL_NAMREPLY(s.get_clients()[socket]->get_nickname(), Ch.getName(), c, s.get_host(), users);
-    std::cout << tmp;
     send(socket, tmp.c_str(), tmp.size(), 0);
     tmp = RPL_ENDOFNAMES(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host());
-    std::cout << tmp;
     send(socket, tmp.c_str(), tmp.size(), 0);
     sendMessage(Ch, (":" + forma + " JOIN :" + Ch.getName() + "\r\n"), socket);
 }
@@ -113,34 +136,42 @@ void sendJoinMessages(Server &s, int socket, Channels& Ch) {
 void join(int socket, Server& s, std::map<int , User *> &clients, std::vector<std::string> &command) {
     std::vector<Channels>::iterator itrchaine;
     std::map<int, std::string>::iterator useritr;
+    std::map<std::string, std::string> ChandKey;
     std::string tmp;
-    if (!ParseJoin(command))
+    if (!ParseJoin(command, ChandKey))
     {
-        if (findChaine(command[1], s.Channel) == s.Channel.end())
-            addChannel(command[1], s.Channel, command);
-        itrchaine = findChaine(command[1], s.Channel);
-        if (itrchaine->get_i())
+        std::map<std::string, std::string>::iterator itr;
+        for (itr = ChandKey.begin(); itr != ChandKey.end(); ++itr)
         {
-            send(socket, ERR_INVITEONLYCHAN(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).c_str(),
-                ERR_INVITEONLYCHAN(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).size(), 0);
-            return ;
+            if (itr->first[0] != '#')
+                return sendError(ERR_NEEDMOREPARAMS(s.get_host(), clients[socket]->get_nickname()), socket);
+            if (findChaine(itr->first, s.Channel) == s.Channel.end())
+                addChannel(s.Channel, itr);
+            itrchaine = findChaine(itr->first, s.Channel);
+            if (itrchaine->get_i())
+            {
+                send(socket, ERR_INVITEONLYCHAN(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).c_str(),
+                    ERR_INVITEONLYCHAN(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).size(), 0);
+                return ;
+            }
+            if (std::find(s.get_clients()[socket]->get_chaine().begin(), s.get_clients()[socket]->get_chaine().end(), itrchaine->getName())
+                != s.get_clients()[socket]->get_chaine().end())
+                return ;
+            if (!itrchaine->getPass().empty() && ((!itr->second.empty() && itrchaine->getPass() != itr->second) || itr->second.empty()))
+            {
+                send(socket, ERR_BADCHANNELKEY(s.get_host(), clients[socket]->get_nickname()).c_str(), ERR_BADCHANNELKEY(s.get_host(), clients[socket]->get_nickname()).size(), 0);
+                return ;
+            }
+            if (itrchaine->get_l() && howManyMembers(*itrchaine) >= itrchaine->getLimit())
+            {
+                send(socket, ERR_CHANNELISFULL(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).c_str(),
+                ERR_CHANNELISFULL(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).size(), 0);
+                return ;
+            }
+            itrchaine->setUsers(socket,clients[socket]->get_nickname());
+            clients[socket]->set_chaine(itrchaine->getName());
+            sendJoinMessages(s, socket, *itrchaine);
         }
-        if (std::find(s.get_clients()[socket]->get_chaine().begin(), s.get_clients()[socket]->get_chaine().end(), itrchaine->getName())
-            != s.get_clients()[socket]->get_chaine().end())
-            return ;
-        if (!itrchaine->getPass().empty() && itrchaine->getPass() != command[2])
-        {
-            send(socket, ERR_BADCHANNELKEY(s.get_host(), clients[socket]->get_nickname()).c_str(), ERR_BADCHANNELKEY(s.get_host(), clients[socket]->get_nickname()).size(), 0);
-            return ;
-        }
-        if (itrchaine->get_l() && howManyMembers(*itrchaine) >= itrchaine->getLimit())
-        {
-            send(socket, ERR_CHANNELISFULL(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).c_str(), ERR_CHANNELISFULL(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).size(), 0);
-            return ;
-        }
-        itrchaine->setUsers(socket,clients[socket]->get_nickname());
-        clients[socket]->set_chaine(itrchaine->getName());
-        sendJoinMessages(s, socket, *itrchaine);
     }
     else
         send(socket, ERR_NEEDMOREPARAMS(s.get_host(), clients[socket]->get_nickname()).c_str(), ERR_NEEDMOREPARAMS(s.get_host(), clients[socket]->get_nickname()).size(), 0);

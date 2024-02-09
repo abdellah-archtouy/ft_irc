@@ -16,4 +16,6 @@ void part(std::vector<std::string> command, Server &s, int socket) {
     itr->getUsers().erase(socket);
     s.get_clients()[socket]->get_chaine().erase(std::find(s.get_clients()[socket]->get_chaine().begin(),
         s.get_clients()[socket]->get_chaine().end(), itr->getName()));
+    if (!howManyMembers(*itr))
+        s.Channel.erase(itr);
 }
