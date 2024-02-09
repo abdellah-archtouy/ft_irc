@@ -4,7 +4,7 @@ import time
 
 # Informations de connexion au serveur IRC
 server_ip = "localhost"
-server_port = 800
+server_port = 8080
 server_password = "1234"
 
 
