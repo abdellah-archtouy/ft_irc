@@ -12,7 +12,7 @@ void part(std::vector<std::string> command, Server &s, int socket) {
     std::string reason;
     for (size_t i = 2; i < command.size(); i++)
         reason += command[i] + " ";
-    broadCast(*itr, PART(form, itr->getName(), command[2], reason));
+    broadCast(*itr, PART(form, itr->getName(), reason));
     itr->getUsers().erase(socket);
     s.get_clients()[socket]->get_chaine().erase(std::find(s.get_clients()[socket]->get_chaine().begin(),
         s.get_clients()[socket]->get_chaine().end(), itr->getName()));
