@@ -58,7 +58,7 @@
 #define PRIVMSG(NICK, USER, HOST, COMMAND) (":" + NICK  + "!~" + USER + "@" + HOST + " " + COMMAND + "\r\n")
 #define JOIN(NICK, CHANNEL) (":" + NICK  + " JOIN " + CHANNEL + "\r\n")
 #define KICK(HOSTMASK, CHANNEL, TARGET, REASON) (":" + HOSTMASK + " KICK " + CHANNEL + " " + TARGET + " " + REASON + "\r\n")
-#define PART(HOSTMASK, CHANNEL, TARGET, REASON) (":" + HOSTMASK + " PART " + CHANNEL + " " + REASON + "\r\n")
+#define PART(HOSTMASK, CHANNEL, REASON) (":" + HOSTMASK + " PART " + CHANNEL + " " + REASON + "\r\n")
 
 class Channels;
 

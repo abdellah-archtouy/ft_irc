@@ -12,7 +12,7 @@ int ParseJoin(std::vector<std::string> &command, std::map<std::string, std::stri
         channel.push_back(tmp);
         tmp.clear();
     }
-    if (command.size() == 3 && strchr(command[2].c_str(), ','))
+    if (command.size() == 3)
     {
         std::stringstream w(command[2]);
         while (getline(w, tmp, ','))
@@ -143,7 +143,7 @@ void join(int socket, Server& s, std::map<int , User *> &clients, std::vector<st
         std::map<std::string, std::string>::iterator itr;
         for (itr = ChandKey.begin(); itr != ChandKey.end(); ++itr)
         {
-            if (itr->first[0] != '#')
+            if (itr->first[0] != '#' || itr->first.size() == 1)
                 return sendError(ERR_NEEDMOREPARAMS(s.get_host(), clients[socket]->get_nickname()), socket);
             if (findChaine(itr->first, s.Channel) == s.Channel.end())
                 addChannel(s.Channel, itr);
