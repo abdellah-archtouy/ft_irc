@@ -2,7 +2,7 @@
 
 Server::Server()
 {
-    serversocket = socket(AF_INET, SOCK_STREAM, 0); // here we creates the socket
+    serversocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (serversocket == -1)
     {
         std::cerr << "Error creating socket" << std::endl;
@@ -67,7 +67,7 @@ void Server::binding(std::string line)
         exit(EXIT_FAILURE);
     }
 
-    if (listen(serversocket, 1) == -1)
+    if (listen(serversocket, 50) == -1)
     {
         std::cerr << "Error listening for connections" << std::endl;
         exit(EXIT_FAILURE);
