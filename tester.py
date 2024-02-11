@@ -4,7 +4,7 @@ import time
 # Informations de connexion au serveur IRC
 server_ip = "localhost"
 server_port = 8080
-server_password = "1234"
+server_password = "123"
 
 
 # Liste de pseudos disponibles
@@ -20,15 +20,15 @@ def connect_irc(nick):
     irc_socket.connect((server_ip, server_port))
 
     irc_socket.send("PASS {}\r\n".format(server_password).encode())
-    time.sleep(0.01)
+    time.sleep(0.1)
     irc_socket.send("USER {} 0 * :Client Bot\r\n".format(nick).encode())
-    time.sleep(0.01)
+    time.sleep(0.1)
     irc_socket.send("NICK {}\r\n".format(nick).encode())
-    time.sleep(0.01)
-    irc_socket.send("JOIN #te\r\n".format(nick).encode())
-    time.sleep(0.01)
-    irc_socket.send("MODE #te +o\r\n".format(nick).encode())
-    time.sleep(0.01)
+    time.sleep(0.1)
+    irc_socket.send("JOIN #t\r\n".format(nick).encode())
+    # time.sleep(0.01)
+    # irc_socket.send("MODE #te +o\r\n".format(nick).encode())
+    # time.sleep(0.01)
 
     while True:
         message = irc_socket.recv(2048).decode()

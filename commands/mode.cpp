@@ -32,7 +32,7 @@ int channelModeArgu(std::vector<std::string> com, int socket, Server &s)
     }
     return 0;
 }
-
+// to do -k we must enter the key value befaure we unset it then i must not repeat the messages of RPL then i had to check the messages proto
 int pareMode(std::vector<std::string> command, int socket, Server &s, std::map<std::string, std::string> &mode)
 {
     if (command.size() < 3)
