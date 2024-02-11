@@ -34,6 +34,7 @@ void Server::Commands(int socket) {
         return ;
     while (getline(ss, tmp, ' '))
         command.push_back(tmp);
+    std::cout << str << std::endl;
     if (command[0] == "JOIN")
         join(socket, *this, clients, command);
     else if (command[0] == "PRIVMSG")

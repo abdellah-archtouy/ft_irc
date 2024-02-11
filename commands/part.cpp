@@ -12,8 +12,19 @@ void part(std::vector<std::string> command, Server &s, int socket) {
     std::string reason;
     for (size_t i = 2; i < command.size(); i++)
         reason += command[i] + " ";
+    int r = itr->getUsers().size();
     broadCast(*itr, PART(form, itr->getName(), reason));
     itr->getUsers().erase(socket);
+    if (std::find(itr->getOperators().begin(), itr->getOperators().end(), socket) != itr->getOperators().end())
+    {
+        if (itr->getOperators().size() == 1 && r > 1)
+            {
+                itr->setOper(itr->getUsers().begin()->first);
+                std::string str = "MODE " + itr->getName() + " +o " + itr->getUsers().begin()->second + "\r\n";
+                broadCast(*itr, str);
+            }
+        itr->getOperators().erase(std::find(itr->getOperators().begin(), itr->getOperators().end(), socket));
+    }
     s.get_clients()[socket]->get_chaine().erase(std::find(s.get_clients()[socket]->get_chaine().begin(),
         s.get_clients()[socket]->get_chaine().end(), itr->getName()));
     if (!howManyMembers(*itr))

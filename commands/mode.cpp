@@ -89,7 +89,7 @@ int pareMode(std::vector<std::string> command, int socket, Server &s, std::map<s
     r = 0;
     for (size_t i = 0; i < flag.size(); i++)
     {
-        if (strchr(flag[i].c_str(), 'i') || strchr(flag[i].c_str(), 't') || c == '-')
+        if (flag[i] != "-o" && (strchr(flag[i].c_str(), 'i') || strchr(flag[i].c_str(), 't') || c == '-'))
             mode[flag[i]] = "";
         else
         {
@@ -145,16 +145,22 @@ void executeMode(std::map<std::string, std::string> map, int socket, Server &s, 
         {
             if (itr->first == "+i")
             {
+                if (Ch.get_i())
+                    return ;
                 Ch.set_i(true);
                 str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host(), "+i :Channel is invite-only");
             }
             if (itr->first == "-i")
             {
-                Ch.set_i(true);
+                if (!Ch.get_i())
+                    return ;
+                Ch.set_i(false);
                 str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host(), "-i :Channel is invite-only");
             }
             if (itr->first == "+l")
             {
+                if (Ch.get_l())
+                    return ;
                 if (!parse_limit(itr->second))
                 {
                     Ch.set_limit(atoi(itr->second.c_str()));
@@ -166,21 +172,29 @@ void executeMode(std::map<std::string, std::string> map, int socket, Server &s, 
             }
             if (itr->first == "-l")
             {
+                if (!Ch.get_l())
+                    return ;
                 Ch.set_l(false);
                 str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host(), "-l unset user limit");
             }
             if (itr->first == "+t")
             {
+                if (Ch.get_t())
+                    return ;
                 Ch.set_t(true);
                 str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host(), "+t :Channel topic is set");
             }
             if (itr->first == "-t")
             {
+                if (!Ch.get_t())
+                    return ;
                 Ch.set_t(false);
                 str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host(), "-t :Channel topic is unset");
             }
             if (itr->first == "+k")
             {
+                if (Ch.get_k())
+                    return ;
                 if (!parse_key(itr->second))
                 {
                     Ch.setPass(itr->second);
@@ -190,6 +204,8 @@ void executeMode(std::map<std::string, std::string> map, int socket, Server &s, 
             }
             if (itr->first == "-k")
             {
+                if (!Ch.get_k())
+                    return ;
                 Ch.setPass("");
                 Ch.set_k(false);
                 str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host(), "-k :Channel secret_key is unset");
@@ -205,11 +221,15 @@ void executeMode(std::map<std::string, std::string> map, int socket, Server &s, 
                 }
                 if (itr->first == "+o")
                 {
+                    if (std::find(Ch.getOperators().begin(), Ch.getOperators().end(), Useritr->first) != Ch.getOperators().end())
+                        return ;
                     Ch.setOper(Useritr->first);
                     str = ("MODE " + Ch.getName() + " +o " + itr->second + "\r\n");
                 }
                 if (itr->first == "-o")
                 {
+                    if (std::find(Ch.getOperators().begin(), Ch.getOperators().end(), Useritr->first) == Ch.getOperators().end())
+                        return ;
                     Ch.getOperators().erase(std::find(Ch.getOperators().begin(), Ch.getOperators().end(), Useritr->first));
                     str = ("MODE " + Ch.getName() + " -o " + itr->second + "\r\n");
                 }
