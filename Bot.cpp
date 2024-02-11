@@ -58,9 +58,13 @@ int main(int ac ,char **av)
             std::getline(l, h, '\r');
             l.clear();
             l.str(h);
+            std::string tmp;
             while (std::getline(l, word1, ' '))
                 param.push_back(word1);
-            std::string tmp = "PRIVMSG " + param[3] + " :You are so annoying\r\n";
+            if(param.size() != 1)
+                tmp = "";
+            else
+                tmp = "PRIVMSG " + param[0] + " :You are so annoying\r\n";
             send(clientSocket, tmp.c_str(), tmp.size(),0);
             if(bytesRead == 0)
                 break;

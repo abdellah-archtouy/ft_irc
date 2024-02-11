@@ -25,17 +25,18 @@ std::vector<Channels>::iterator findChaine(std::string name, std::vector<Channel
 
 void bot(std::vector<std::string> command, Server &s, int socket)
 {
+    socket = 0;
     if (command.size() != 2)
         send(socket, ERR_NEEDMOREPARAMS(s.get_host(), s.get_clients()[socket]->get_nickname()).c_str(), ERR_NEEDMOREPARAMS(s.get_host(), s.get_clients()[socket]->get_nickname()).size(),0);
     else if (findFromAllChannels(s.get_clients(), command[1]) == s.get_clients().end())
         send(socket, ERR_NOSUCHNICK(s.get_host(), s.get_clients()[socket]->get_nickname(),command[1]).c_str(), ERR_NOSUCHNICK(s.get_host(), s.get_clients()[socket]->get_nickname(), command[1]).size(),0);
     else
     {
-        std::vector<std::string> command1;
-        command1.push_back("PRIVMSG");
-        command1.push_back("bot");
-        command1.push_back(command[1]);
-        privMsg(command1, s, socket);
+        std::map<int , User *>::iterator ite = findFromAllChannels(s.get_clients(), "bot");
+        if (ite == s.get_clients().end())
+            send(socket, ERR_NOSUCHNICK(s.get_host(), s.get_clients()[socket]->get_nickname(),"bot").c_str(), ERR_NOSUCHNICK(s.get_host(), s.get_clients()[socket]->get_nickname(), "bot").size(),0);
+        else
+            send(ite->first, (command[1] + "\r\n").c_str(), (command[1] + "\r\n").size(), 0);
     }
 }
 
@@ -50,7 +51,7 @@ void Server::Commands(int socket) {
         return ;
     while (getline(ss, tmp, ' '))
         command.push_back(tmp);
-    std::cout << str << std::endl;
+    // std::cout << str << std::endl;
     if (command[0] == "JOIN")
         join(socket, *this, clients, command);
     else if (command[0] == "PRIVMSG")
