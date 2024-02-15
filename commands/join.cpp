@@ -55,12 +55,6 @@ void sendMessage(Channels ch, std::string tmp, int socket) {
     }
 }
 
-// std::string getCurrentTimestamp() {
-//     std::time_t now = std::time(NULL);
-//     char timestamp[50];
-//     return timestamp;
-// }
-
 void	ft_putnbr(std::time_t n, std::string &str)
 {
 	if (n < 0)
@@ -148,14 +142,13 @@ void join(int socket, Server& s, std::map<int , User *> &clients, std::vector<st
             if (findChaine(itr->first, s.Channel) == s.Channel.end())
                 addChannel(s.Channel, itr);
             itrchaine = findChaine(itr->first, s.Channel);
-            if (itrchaine->get_i())
+            if (itrchaine->get_i() && std::find(itrchaine->get_inviteList().begin(), itrchaine->get_inviteList().end(), socket) == itrchaine->get_inviteList().end())
             {
                 send(socket, ERR_INVITEONLYCHAN(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).c_str(),
                     ERR_INVITEONLYCHAN(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).size(), 0);
                 return ;
             }
-            if (std::find(s.get_clients()[socket]->get_chaine().begin(), s.get_clients()[socket]->get_chaine().end(), itrchaine->getName())
-                != s.get_clients()[socket]->get_chaine().end())
+            if (std::find(clients[socket]->get_chaine().begin(), clients[socket]->get_chaine().end(), itrchaine->getName())!= clients[socket]->get_chaine().end())
                 return ;
             if (!itrchaine->getPass().empty() && ((!itr->second.empty() && itrchaine->getPass() != itr->second) || itr->second.empty()))
             {

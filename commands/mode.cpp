@@ -148,14 +148,14 @@ void executeMode(std::map<std::string, std::string> map, int socket, Server &s, 
                 if (Ch.get_i())
                     return ;
                 Ch.set_i(true);
-                str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host(), "+i :Channel is invite-only");
+                str = s.get_host() + " MODE " + Ch.getName() + " +i\r\n";
             }
             if (itr->first == "-i")
             {
                 if (!Ch.get_i())
                     return ;
                 Ch.set_i(false);
-                str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host(), "-i :Channel is invite-only");
+                str = s.get_host() + " MODE " + Ch.getName() + " -i\r\n";
             }
             if (itr->first == "+l")
             {
@@ -165,7 +165,7 @@ void executeMode(std::map<std::string, std::string> map, int socket, Server &s, 
                 {
                     Ch.set_limit(atoi(itr->second.c_str()));
                     Ch.set_l(true);
-                    str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host(), ("+l set user limit to `" + itr->second + "`"));
+                    str = s.get_host() + " MODE " + Ch.getName() + " +l " + itr->second + "\r\n";
                 }
                 else
                     return sendError(ERR_UNKNOWNMODE(s.get_host(), s.get_clients()[socket]->get_nickname(), itr->second), socket);
@@ -175,21 +175,21 @@ void executeMode(std::map<std::string, std::string> map, int socket, Server &s, 
                 if (!Ch.get_l())
                     return ;
                 Ch.set_l(false);
-                str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host(), "-l unset user limit");
+                str = s.get_host() + " MODE " + Ch.getName() + " -l\r\n";
             }
             if (itr->first == "+t")
             {
                 if (Ch.get_t())
                     return ;
                 Ch.set_t(true);
-                str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host(), "+t :Channel topic is set");
+                str = s.get_host() + " MODE " + Ch.getName() + " +t\r\n";
             }
             if (itr->first == "-t")
             {
                 if (!Ch.get_t())
                     return ;
                 Ch.set_t(false);
-                str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host(), "-t :Channel topic is unset");
+                str = s.get_host() + " MODE " + Ch.getName() + " -t\r\n";
             }
             if (itr->first == "+k")
             {
@@ -199,7 +199,7 @@ void executeMode(std::map<std::string, std::string> map, int socket, Server &s, 
                 {
                     Ch.setPass(itr->second);
                     Ch.set_k(true);
-                    str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host(), ("+k :Channel secret_key set"));
+                    str = s.get_host() + " MODE " + Ch.getName() + " +k " + itr->second + "\r\n";
                 }
             }
             if (itr->first == "-k")
@@ -208,7 +208,7 @@ void executeMode(std::map<std::string, std::string> map, int socket, Server &s, 
                     return ;
                 Ch.setPass("");
                 Ch.set_k(false);
-                str = RPL_CHANNELMODEIS(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host(), "-k :Channel secret_key is unset");
+                str = s.get_host() + " MODE " + Ch.getName() + " -k\r\n";
             }
             if (itr->first[1] == 'o')
             {
@@ -224,14 +224,14 @@ void executeMode(std::map<std::string, std::string> map, int socket, Server &s, 
                     if (std::find(Ch.getOperators().begin(), Ch.getOperators().end(), Useritr->first) != Ch.getOperators().end())
                         return ;
                     Ch.setOper(Useritr->first);
-                    str = ("MODE " + Ch.getName() + " +o " + itr->second + "\r\n");
+                    str = (s.get_host() + " MODE " + Ch.getName() + " +o " + itr->second + "\r\n");
                 }
                 if (itr->first == "-o")
                 {
                     if (std::find(Ch.getOperators().begin(), Ch.getOperators().end(), Useritr->first) == Ch.getOperators().end())
                         return ;
                     Ch.getOperators().erase(std::find(Ch.getOperators().begin(), Ch.getOperators().end(), Useritr->first));
-                    str = ("MODE " + Ch.getName() + " -o " + itr->second + "\r\n");
+                    str = (s.get_host() + " MODE " + Ch.getName() + " -o\r\n");
                 }
             }
             broadCast(Ch, str);

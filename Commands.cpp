@@ -40,7 +40,7 @@ void bot(std::vector<std::string> command, Server &s, int socket)
     }
 }
 
-void Server::Commands(int socket,  std::vector<pollfd>::iterator it) {
+void Server::Commands(int socket, std::vector<pollfd>::iterator pollitr) {
     std::string str = clients[socket]->get_buffer().substr(0, clients[socket]->get_buffer().find("\r\n"));
     std::vector<Channels>::iterator itrchaine;
     std::map<int, std::string>::iterator useritr;
@@ -51,8 +51,13 @@ void Server::Commands(int socket,  std::vector<pollfd>::iterator it) {
         return ;
     while (getline(ss, tmp, ' '))
         command.push_back(tmp);
-    // std::cout << str << std::endl;
-    if (command[0] == "JOIN")
+    if (command[0] == "NICK")
+        nick(command, *this, socket);
+    else if (command[0] == "USER")
+        return sendError(ERR_ALREADYREGISTERED(this->get_host(), get_clients()[socket]->get_nickname()), socket);
+    else if (command[0] == "PASS")
+        return sendError(ERR_ALREADYREGISTERED(this->get_host(), get_clients()[socket]->get_nickname()), socket);
+    else if (command[0] == "JOIN")
         join(socket, *this, clients, command);
     else if (command[0] == "PRIVMSG")
         privMsg(command, *this, socket);
@@ -69,5 +74,5 @@ void Server::Commands(int socket,  std::vector<pollfd>::iterator it) {
     else if (command[0] == "BOT")
         bot(command, *this, socket);
     else if (command[0] == "QUIT")
-        kick_out_client(socket, get_clients(), it);
+        kick_out_client(socket, get_clients(), pollitr);
 }

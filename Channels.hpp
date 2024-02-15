@@ -20,6 +20,7 @@ class Channels
         std::string Topic;
         std::map<int, std::string> users;
         std::vector<int> operators;
+        std::vector<int> inviteList;
         std::time_t timestamp;
     public:
         Channels(std::string ChaName) : ChaName(ChaName) , i(false), t(false), l(false), key(false) {}
@@ -39,7 +40,9 @@ class Channels
         void set_topic(std::string str) { this->Topic = str; }
         void set_limit(int l) { this->limit = l; }
         void set_topicSetter(std::string t) { this->topicSetter = t; }
+        void set_inviteList(int socket) { this->inviteList.push_back(socket); }
 
+        std::vector<int>& get_inviteList() { return this->inviteList; }
         bool get_t() { return (this->t); }
         std::string get_topicSetter() { return (this->topicSetter); }
         bool get_i() { return (this->i); }
@@ -70,7 +73,9 @@ void sendJoinMessages(Server &s, int socket, Channels& Ch);
 void topic(std::vector<std::string> command, Server &s, int socket);
 void kick(std::vector<std::string> command, Server &s, int socket);
 void part(std::vector<std::string> command, Server &s, int socket);
+void nick(std::vector<std::string> command, Server &s, int socket);
 int howManyMembers(Channels &ch);
-// std::string getCurrentTimestamp();
+void	ft_putnbr(std::time_t n, std::string &str);
+int ft_check_nick(std::map<int, User *> client, std::string nick);
 
 #endif

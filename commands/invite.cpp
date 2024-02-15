@@ -20,8 +20,7 @@ void invite(std::vector<std::string> command, Server &s, int socket) {
         return sendError(ERR_USERONCHANNEL(s.get_host(), s.get_clients()[socket]->get_nickname(), command[1], command[2]), socket);
 
     itrChaine->setUsers(user->first, user->second->get_nickname());
-    s.get_clients()[user->first]->set_chaine(itrChaine->getName());
-    sendJoinMessages(s, user->first, *itrChaine);
+    itrChaine->set_inviteList(user->first); // here we add socket to invite list
     std::string str = ":" + FORMA(s.get_clients()[socket]->get_username(), s.get_clients()[socket]->get_nickname(), s.get_clients()[socket]->get_ip())
         + " 341 " + user->second->get_nickname() + " " + s.get_clients()[socket]->get_nickname() + " " + itrChaine->getName() + "\r\n";
     send(socket, str.c_str(), str.size(), 0);

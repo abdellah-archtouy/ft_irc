@@ -133,7 +133,7 @@ std::string ft_get_realname(std::string user)
     return word;
 }
 
-int Server::ft_check_auten(std::map<int, User *> client, int socket)
+int Server::ft_check_auten(std::map<int, User *>& client, int socket)
 {
     std::string buffer = client[socket]->get_buffer().substr(0, client[socket]->get_buffer().find("\r\n"));
     std::stringstream split(buffer);
@@ -190,12 +190,12 @@ int Server::ft_check_auten(std::map<int, User *> client, int socket)
     std::cout << "\033[1;32m"
               << "User Connected "
               << "\033[0m" << std::endl;
-    std::string tmp = RPL_WELCOME(get_host(), clients[socket]->get_nickname(), client[socket]->get_nickname() + "!" + client[socket]->get_username() + "@" + client[socket]->get_ip());
-    send(socket, tmp.c_str(), tmp.size(), 0);
+    std::string message = RPL_WELCOME(get_host(), clients[socket]->get_nickname(), client[socket]->get_nickname() + "!" + client[socket]->get_username() + "@" + client[socket]->get_ip());
+    send(socket, message.c_str(), message.size(), 0);
     return 0;
 }
 
-int Server::ft_get_buffer(std::vector<pollfd> &fd, std::map<int, User *> &clients, int i, std::vector<pollfd>::iterator it)
+int Server::ft_get_buffer(std::vector<pollfd> &fd, std::map<int, User *> &clients, int i, std::vector<pollfd>::iterator pollitr)
 {
     fcntl(fd[i].fd, F_SETFL, O_NONBLOCK);
     char buffer[512];
@@ -212,7 +212,7 @@ int Server::ft_get_buffer(std::vector<pollfd> &fd, std::map<int, User *> &client
         return 1;
     }
     fd[i].revents = 0;
-    Commands(fd[i].fd, it);
+    Commands(fd[i].fd, pollitr);
     return 0;
 }
 
@@ -229,7 +229,7 @@ int Server::kick_out_client(int socket, std::map<int, User *> &clients, std::vec
         {
             std::string form = FORMA(this->get_clients()[socket]->get_username(),
                                      this->get_clients()[socket]->get_nickname(), this->get_clients()[socket]->get_ip());
-            broadCast(*itr, PART(form, itr->getName(), "Leaving"));
+            broadCast(*itr, PART(form, itr->getName(), "kicked from channel"));
             (*itr).getUsers().erase(itr->getUsers().find(socket));
         }
     }
@@ -289,13 +289,13 @@ void Server::polling()
             std::vector<pollfd>::iterator it;
             if (fd[i].revents == POLLIN)
             {
-                it = fds.begin() +  i;
+                it = fds.begin() + i;
                 ft_get_buffer(fds, clients, i, it);
                 break;
             }
             else if (fd[i].revents & POLLHUP)
             {
-                it = fds.begin() +  i;
+                it = fds.begin() + i;
                 kick_out_client(fds[i].fd, clients, it);
                 break;
             }
@@ -308,7 +308,7 @@ std::map<int, User *> &Server::get_clients()
     return (clients);
 }
 
-std::vector<pollfd> Server::get_fds()
+std::vector<pollfd>& Server::get_fds()
 {
     return (fds);
 }
