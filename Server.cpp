@@ -284,9 +284,6 @@ void Server::polling()
             add_client(fds, clients);
             this->fd = &fds[0];
         }
-        else
-        {
-
         for (size_t i = 1; i < fds.size(); i++)
         {
             std::vector<pollfd>::iterator it;
@@ -302,7 +299,6 @@ void Server::polling()
                 kick_out_client(fds[i].fd, clients, it);
                 break;
             }
-        }
         }
     }
 }
