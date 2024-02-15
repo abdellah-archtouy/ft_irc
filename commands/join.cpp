@@ -164,6 +164,8 @@ void join(int socket, Server& s, std::map<int , User *> &clients, std::vector<st
             itrchaine->setUsers(socket,clients[socket]->get_nickname());
             clients[socket]->set_chaine(itrchaine->getName());
             sendJoinMessages(s, socket, *itrchaine);
+            if (itrchaine->get_i() && std::find(itrchaine->get_inviteList().begin(), itrchaine->get_inviteList().end(), socket) != itrchaine->get_inviteList().end())
+                itrchaine->get_inviteList().erase(std::find(itrchaine->get_inviteList().begin(), itrchaine->get_inviteList().end(), socket));
         }
     }
     else
