@@ -190,11 +190,12 @@ int Server::ft_check_auten(std::map<int, User *> client, int socket)
     std::cout << "\033[1;32m"
               << "User Connected "
               << "\033[0m" << std::endl;
-    send(socket, RPL_WELCOME(get_host(), clients[socket]->get_nickname(), client[socket]->get_nickname() + "!" + client[socket]->get_username() + "@" + client[socket]->get_ip()).c_str(), RPL_WELCOME(get_host(), clients[socket]->get_nickname(), client[socket]->get_nickname() + "!" + client[socket]->get_username() + "@" + client[socket]->get_ip()).size(), 0);
+    std::string tmp = RPL_WELCOME(get_host(), clients[socket]->get_nickname(), client[socket]->get_nickname() + "!" + client[socket]->get_username() + "@" + client[socket]->get_ip());
+    send(socket, tmp.c_str(), tmp.size(), 0);
     return 0;
 }
 
-int Server::ft_get_buffer(std::vector<pollfd> &fd, std::map<int, User *> &clients, int i)
+int Server::ft_get_buffer(std::vector<pollfd> &fd, std::map<int, User *> &clients, int i, std::vector<pollfd>::iterator it)
 {
     fcntl(fd[i].fd, F_SETFL, O_NONBLOCK);
     char buffer[512];
@@ -210,31 +211,31 @@ int Server::ft_get_buffer(std::vector<pollfd> &fd, std::map<int, User *> &client
         ft_check_auten(clients, fd[i].fd);
         return 1;
     }
-    Commands(fd[i].fd);
     fd[i].revents = 0;
+    Commands(fd[i].fd, it);
     return 0;
 }
 
-int Server::kick_out_client(std::vector<pollfd> &fds, std::map<int, User *> &clients, int i, std::vector<pollfd>::iterator it)
+int Server::kick_out_client(int socket, std::map<int, User *> &clients, std::vector<pollfd>::iterator it)
 {
-    if (clients[fds[i].fd]->get_autho_status())
+    if (clients[socket]->get_autho_status())
         std::cout << "\033[1;31m"
                   << "User Disconected "
                   << "\033[0m" << std::endl;
-    for (size_t j = 0; j < clients[fds[i].fd]->get_chaine().size(); j++)
+    for (size_t j = 0; j < clients[socket]->get_chaine().size(); j++)
     {
-        std::vector<Channels>::iterator itr = findChaine(clients[fds[i].fd]->get_chaine()[j], this->Channel);
+        std::vector<Channels>::iterator itr = findChaine(clients[socket]->get_chaine()[j], this->Channel);
         if (itr != this->Channel.end())
         {
-            std::string form = FORMA(this->get_clients()[fds[i].fd]->get_username(),
-                                     this->get_clients()[fds[i].fd]->get_nickname(), this->get_clients()[fds[i].fd]->get_ip());
-            broadCast(*itr, PART(form, itr->getName(), "kicked from channel"));
-            (*itr).getUsers().erase(itr->getUsers().find(fds[i].fd));
+            std::string form = FORMA(this->get_clients()[socket]->get_username(),
+                                     this->get_clients()[socket]->get_nickname(), this->get_clients()[socket]->get_ip());
+            broadCast(*itr, PART(form, itr->getName(), "Leaving"));
+            (*itr).getUsers().erase(itr->getUsers().find(socket));
         }
     }
-    close(fds[i].fd);
-    delete clients[fds[i].fd];
-    clients.erase(fds[i].fd);
+    close(socket);
+    delete clients[socket];
+    clients.erase(socket);
     fds.erase(it);
     return 0;
 }
@@ -264,7 +265,6 @@ int Server::add_client(std::vector<pollfd> &fds, std::map<int, User *> &clients)
 void Server::polling()
 {
     pollfd tmp;
-    // is a represent of file descriptor and we will pass it as an argument to poll so we can work with multiple fds
     tmp.fd = serversocket;
     tmp.events = POLLIN;
     tmp.revents = 0;
@@ -279,25 +279,30 @@ void Server::polling()
             std::cerr << "Error polling connection" << std::endl;
             exit(EXIT_FAILURE);
         }
-        if (fds[0].revents & POLLIN)
+        if (fds[0].revents == POLLIN)
         {
             add_client(fds, clients);
+            this->fd = &fds[0];
         }
-        this->fd = &fds[0];
+        else
+        {
+
         for (size_t i = 1; i < fds.size(); i++)
         {
             std::vector<pollfd>::iterator it;
             if (fd[i].revents == POLLIN)
             {
-                ft_get_buffer(fds, clients, i);
+                it = fds.begin() +  i;
+                ft_get_buffer(fds, clients, i, it);
                 break;
             }
             else if (fd[i].revents & POLLHUP)
             {
-                it = fds.begin() + i;
-                kick_out_client(fds, clients, i, it);
+                it = fds.begin() +  i;
+                kick_out_client(fds[i].fd, clients, it);
                 break;
             }
+        }
         }
     }
 }
@@ -320,76 +325,3 @@ Server::~Server()
     //     delete i->second;
     // }
 }
-// fcntl(fd[0].fd, F_SETFL, O_NONBLOCK);
-// sockaddr_in clinetadress;
-// socklen_t clientAddrLen = sizeof(clinetadress);
-// clientSocket = accept(serversocket, (struct sockaddr*)&clinetadress, &clientAddrLen);
-// if (clientSocket < 0) {
-//     std::cerr << "Error accepting connection" << std::endl;
-//     exit(EXIT_FAILURE);
-// }
-// tmp.fd = clientSocket;
-// tmp.events = POLLIN;
-// tmp.revents = 0;
-// fds[0].revents = 0;
-// fds.push_back(tmp);
-// clients[clientSocket] = new User(clientSocket);
-// clients[clientSocket]->set_add(clinetadress);
-
-// fcntl(fd[i].fd, F_SETFL, O_NONBLOCK);
-// char buffer[512];
-// bzero(buffer, 512);
-// ssize_t bytesRead;
-// bytesRead = recv(fd[i].fd, buffer, sizeof(buffer), 0);
-// std::string ab = buffer;
-// clients[fds[i].fd]->set_buffer(buffer);
-// if (ab.find("\r\n") == std::string::npos)
-//     break ;
-// if (clients[fds[i].fd]->get_autho_status() == false)
-// {
-//     ft_check_auten(clients, fds[i].fd);
-//     break;
-// }
-// std::cout << clients[fds[i].fd]->get_buffer() << std::endl;
-// // send(fd[i].fd, buffer, bytesRead, 0);
-// fd[i].revents = 0;
-
-// close(fds[i].fd);
-// if (clients[fds[i].fd]->get_autho_status())
-//     std::cout << "\033[1;31m" << "User Desconected " << "\033[0m" << std::endl;
-// delete clients[fds[i].fd];
-// clients.erase(fds[i].fd);
-// fds.erase(it);
-
-// if (client[socket]->get_pass() == "")
-// {
-//     if (command[0] == "PASS")
-//     {
-//         if (command[1] == this->_pass)
-//             client[socket]->set_pass(command[1]);
-//         else
-//             return send(socket, ERR_PASSWDMISMATCH(host, clients[socket]->get_username()).c_str(), ERR_PASSWDMISMATCH(host, "*").size(), 0),1;
-//         return 1;
-//     }
-//     else
-//         return std::cerr << "you need first to authenticate" << std::endl,1;
-// }
-// else if (client[socket]->get_nikename() == "")
-// {
-//     if (command[0] == "NICK")
-//     {
-//         client[socket]->set_nikename(command[1]);
-//         return 1;
-//     }
-//     else
-//         return std::cerr << "you need first to authenticate" << std::endl,1;
-// }
-// else if (client[socket]->get_username() == "*")
-// {
-//     if (command[0] == "USER")
-//     {
-//         client[socket]->set_username(command[1]);
-//     }
-//     else
-//         return std::cerr << "you need first to authenticate" << std::endl,1;
-// }

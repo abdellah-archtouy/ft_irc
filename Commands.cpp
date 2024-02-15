@@ -40,7 +40,7 @@ void bot(std::vector<std::string> command, Server &s, int socket)
     }
 }
 
-void Server::Commands(int socket) {
+void Server::Commands(int socket,  std::vector<pollfd>::iterator it) {
     std::string str = clients[socket]->get_buffer().substr(0, clients[socket]->get_buffer().find("\r\n"));
     std::vector<Channels>::iterator itrchaine;
     std::map<int, std::string>::iterator useritr;
@@ -68,4 +68,6 @@ void Server::Commands(int socket) {
         part(command, *this, socket);
     else if (command[0] == "BOT")
         bot(command, *this, socket);
+    else if (command[0] == "QUIT")
+        kick_out_client(socket, get_clients(), it);
 }

@@ -80,10 +80,10 @@ public:
     void binding(std::string);
     std::string get_host();
     int ft_check_auten(std::map<int, User *> clients, int);
-    int ft_get_buffer(std::vector<pollfd> &fd, std::map<int , User *> &clients, int i);
-    int kick_out_client(std::vector<pollfd> &fds, std::map<int , User *> &clients, int i, std::vector<pollfd>::iterator it);
+    int ft_get_buffer(std::vector<pollfd> &fd, std::map<int, User *> &clients, int i, std::vector<pollfd>::iterator it);
+    int kick_out_client(int socket, std::map<int, User *> &clients, std::vector<pollfd>::iterator it);
     int add_client(std::vector<pollfd> &fds, std::map<int , User *> &clients);
-    void Commands(int socket);
+    void Commands(int socket,  std::vector<pollfd>::iterator it);
     ~Server();
 };
 
