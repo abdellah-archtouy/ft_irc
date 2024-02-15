@@ -76,14 +76,14 @@ public:
     Server(/* args */);
     void polling(void);
     std::map<int, User *> &get_clients();
-    std::vector<pollfd> get_fds();
+    std::vector<pollfd>& get_fds();
     void binding(std::string);
     std::string get_host();
-    int ft_check_auten(std::map<int, User *> clients, int);
-    int ft_get_buffer(std::vector<pollfd> &fd, std::map<int , User *> &clients, int i);
-    int kick_out_client(std::vector<pollfd> &fds, std::map<int , User *> &clients, int i, std::vector<pollfd>::iterator it);
+    int ft_check_auten(std::map<int, User *>& clients, int);
+    int ft_get_buffer(std::vector<pollfd> &fd, std::map<int, User *> &clients, int i, std::vector<pollfd>::iterator pollitr);
+    int kick_out_client(int socket, std::map<int, User *> &clients, std::vector<pollfd>::iterator it);
     int add_client(std::vector<pollfd> &fds, std::map<int , User *> &clients);
-    void Commands(int socket);
+    void Commands(int socket, std::vector<pollfd>::iterator pollitr);
     ~Server();
 };
 

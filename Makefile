@@ -12,6 +12,7 @@ SRC =	main.cpp \
 		Commands/topic.cpp \
 		Commands/kick.cpp \
 		Commands/part.cpp \
+		Commands/nick.cpp \
 		Commands/mode.cpp
 
 SRC_B = Bot.cpp
@@ -24,7 +25,7 @@ OBJ = $(SRC:%.cpp=%.o)
 
 OBJ_B = $(SRC_B:%.cpp=%.o)
 
-CPPFALGS =  -std=c++98 -Wall -Wextra -Werror -g -fsanitize=address
+CPPFALGS =  -std=c++98 -Wall -Wextra -Werror
 
 CC = c++
 
@@ -44,7 +45,7 @@ clean:
 	@rm -rf $(OBJ_B)
 
 fclean: clean
-	rm -rf $(NAME)
-	rm -rf $(NAME_B)
+	@rm -rf $(NAME)
+	@rm -rf $(NAME_B)
 
 re: fclean all

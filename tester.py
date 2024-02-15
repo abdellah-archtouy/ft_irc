@@ -26,9 +26,7 @@ def connect_irc(nick):
     irc_socket.send("NICK {}\r\n".format(nick).encode())
     time.sleep(0.1)
     irc_socket.send("JOIN #t\r\n".format(nick).encode())
-    # time.sleep(0.01)
-    # irc_socket.send("MODE #te +o\r\n".format(nick).encode())
-    # time.sleep(0.01)
+    time.sleep(0.01)
 
     while True:
         message = irc_socket.recv(2048).decode()
