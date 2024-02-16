@@ -11,7 +11,7 @@ server_password = "123"
 available_nicks = []
 
 
-for i in range(1, 50):
+for i in range(1, 1024):
     nick = "client_bot{}".format(i)
     available_nicks.append(nick)
 
@@ -19,14 +19,17 @@ def connect_irc(nick):
     irc_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     irc_socket.connect((server_ip, server_port))
 
+    if i % 2 == 0:
+        time.sleep(1)
     irc_socket.send("PASS {}\r\n".format(server_password).encode())
-    time.sleep(0.1)
+    time.sleep(1)
     irc_socket.send("USER {} 0 * :Client Bot\r\n".format(nick).encode())
-    time.sleep(0.1)
+    time.sleep(1)
     irc_socket.send("NICK {}\r\n".format(nick).encode())
-    time.sleep(0.1)
-    irc_socket.send("JOIN #t\r\n".format(nick).encode())
-    time.sleep(0.01)
+    time.sleep(1)
+    # irc_socket.send("JOIN #t\r\n".format(nick).encode())
+    # time.sleep(6)
+    # irc_socket.send("QUIT\r\n".format(nick).encode())
 
     while True:
         message = irc_socket.recv(2048).decode()
