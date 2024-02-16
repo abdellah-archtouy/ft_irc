@@ -142,20 +142,20 @@ void join(int socket, Server& s, std::map<int , User *> &clients, std::vector<st
             if (findChaine(itr->first, s.Channel) == s.Channel.end())
                 addChannel(s.Channel, itr);
             itrchaine = findChaine(itr->first, s.Channel);
-            if (itrchaine->get_i() && std::find(itrchaine->get_inviteList().begin(), itrchaine->get_inviteList().end(), socket) == itrchaine->get_inviteList().end())
+            if (std::find(clients[socket]->get_chaine().begin(), clients[socket]->get_chaine().end(), itrchaine->getName()) != clients[socket]->get_chaine().end()) // here i checked if the client is alread in channel
+                return ;
+            if (itrchaine->get_i() && std::find(itrchaine->get_inviteList().begin(), itrchaine->get_inviteList().end(), socket) == itrchaine->get_inviteList().end()) // here i see if the client is on invite list in +i channel
             {
                 send(socket, ERR_INVITEONLYCHAN(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).c_str(),
                     ERR_INVITEONLYCHAN(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).size(), 0);
                 return ;
             }
-            if (std::find(clients[socket]->get_chaine().begin(), clients[socket]->get_chaine().end(), itrchaine->getName())!= clients[socket]->get_chaine().end())
-                return ;
-            if (!itrchaine->getPass().empty() && ((!itr->second.empty() && itrchaine->getPass() != itr->second) || itr->second.empty()))
+            if (!itrchaine->getPass().empty() && ((!itr->second.empty() && itrchaine->getPass() != itr->second) || itr->second.empty())) // check the password if the channel is +k
             {
                 send(socket, ERR_BADCHANNELKEY(s.get_host(), clients[socket]->get_nickname()).c_str(), ERR_BADCHANNELKEY(s.get_host(), clients[socket]->get_nickname()).size(), 0);
                 return ;
             }
-            if (itrchaine->get_l() && howManyMembers(*itrchaine) >= itrchaine->getLimit())
+            if (itrchaine->get_l() && howManyMembers(*itrchaine) >= itrchaine->getLimit()) // i check the user limit if i passed the user limites +l
             {
                 send(socket, ERR_CHANNELISFULL(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).c_str(),
                 ERR_CHANNELISFULL(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).size(), 0);
@@ -164,7 +164,7 @@ void join(int socket, Server& s, std::map<int , User *> &clients, std::vector<st
             itrchaine->setUsers(socket,clients[socket]->get_nickname());
             clients[socket]->set_chaine(itrchaine->getName());
             sendJoinMessages(s, socket, *itrchaine);
-            if (itrchaine->get_i() && std::find(itrchaine->get_inviteList().begin(), itrchaine->get_inviteList().end(), socket) != itrchaine->get_inviteList().end())
+            if (itrchaine->get_i() && std::find(itrchaine->get_inviteList().begin(), itrchaine->get_inviteList().end(), socket) != itrchaine->get_inviteList().end()) // erase the joined one from invite list if he(her) join the channel in +i
                 itrchaine->get_inviteList().erase(std::find(itrchaine->get_inviteList().begin(), itrchaine->get_inviteList().end(), socket));
         }
     }
