@@ -285,7 +285,9 @@ void Server::polling()
     while (1)
     {
         pol = poll(fd, fds.size(), -1);
-        if (poll(fd, fds.size(), -1) < 0){
+        if (pol == -1)
+        {
+            std::cerr << "Error polling connection" << std::endl;
             std::cerr << "Error poll" << std::endl;
             close(serversocket);
             std::map<int, User *> c = clients;
@@ -296,11 +298,6 @@ void Server::polling()
                 delete c[fd[i].fd];
                 close(fd[i].fd);
             }
-            exit(EXIT_FAILURE);
-        }
-        if (pol == -1)
-        {
-            std::cerr << "Error polling connection" << std::endl;
             exit(EXIT_FAILURE);
         }
         if (fds[0].revents == POLLIN)
