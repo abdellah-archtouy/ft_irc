@@ -288,13 +288,23 @@ void Server::polling()
         if (pol == -1)
         {
             std::cerr << "Error polling connection" << std::endl;
+            std::cerr << "Error poll" << std::endl;
+            close(serversocket);
+            std::map<int, User *> c = clients;
+            std::vector<pollfd> fd = fds;
+            close(fd[0].fd);
+            for (size_t i = 1; i <= c.size(); i++)
+            {
+                delete c[fd[i].fd];
+                close(fd[i].fd);
+            }
             exit(EXIT_FAILURE);
         }
-        if (fds[0].revents & POLLIN)
+        if (fds[0].revents == POLLIN)
         {
             add_client(fds, clients);
+            this->fd = &fds[0];
         }
-        this->fd = &fds[0];
         for (size_t i = 1; i < fds.size(); i++)
         {
             std::vector<pollfd>::iterator it;
@@ -330,5 +340,13 @@ Server::~Server()
     // {
     //     close(i->first);
     //     delete i->second;
+    // }
+    // std::map<int, User *> c = clients;
+    // std::vector<pollfd> fd = fds;
+    // close(fd[0].fd);
+    // for (size_t i = 1; i <= clients.size(); i++)
+    // {
+    //     delete clients[fd[i].fd];
+    //     close(fd[i].fd);
     // }
 }
