@@ -73,7 +73,6 @@ void	ft_putnbr(std::time_t n, std::string &str)
 
 void sendJoinMessages(Server &s, int socket, Channels& Ch) {
     std::string tmp;
-    std::string c;
     std::string users;
 
     std::string forma = FORMA(s.get_clients()[socket]->get_username(), s.get_clients()[socket]->get_nickname(), s.get_clients()[socket]->get_ip());
@@ -102,7 +101,6 @@ void sendJoinMessages(Server &s, int socket, Channels& Ch) {
         str = s.get_host() + " MODE " + Ch.getName() + " " + tmp + "\r\n";
         if (tmp.size() > 1)
             send(socket, str.c_str(), str.size(), 0);
-        c = " = ";
     }
     if (i > 1)
     {
@@ -118,8 +116,8 @@ void sendJoinMessages(Server &s, int socket, Channels& Ch) {
             tmp = RPL_TOPICWHOTIME(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host(), Ch.get_topicSetter(), str);
             send(socket, tmp.c_str(), tmp.size(), 0);
         }
-        c = " @ ";
     }
+    std::string c = " = ";
     tmp = RPL_NAMREPLY(s.get_clients()[socket]->get_nickname(), Ch.getName(), c, s.get_host(), users);
     send(socket, tmp.c_str(), tmp.size(), 0);
     tmp = RPL_ENDOFNAMES(s.get_clients()[socket]->get_nickname(), Ch.getName(), s.get_host());
