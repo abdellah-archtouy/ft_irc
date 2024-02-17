@@ -208,7 +208,7 @@ void executeMode(std::map<std::string, std::string> map, int socket, Server &s, 
                     return ;
                 Ch.setPass("");
                 Ch.set_k(false);
-                str = s.get_host() + " MODE " + Ch.getName() + " -k\r\n";
+                str = s.get_host() + " MODE " + Ch.getName() + " -k " + "\r\n";
             }
             if (itr->first[1] == 'o')
             {
@@ -231,7 +231,7 @@ void executeMode(std::map<std::string, std::string> map, int socket, Server &s, 
                     if (std::find(Ch.getOperators().begin(), Ch.getOperators().end(), Useritr->first) == Ch.getOperators().end())
                         return ;
                     Ch.getOperators().erase(std::find(Ch.getOperators().begin(), Ch.getOperators().end(), Useritr->first));
-                    str = (s.get_host() + " MODE " + Ch.getName() + " -o\r\n");
+                    str = (s.get_host() + " MODE " + Ch.getName() + " -o " + itr->second + "\r\n");
                 }
             }
             broadCast(Ch, str);

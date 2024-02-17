@@ -95,7 +95,6 @@ std::string User::get_pass()
 }
 
 void User::set_chaine(std::string name) {
-    std::cout << "here " + name + " is joining\n";
     this->chname.push_back(name);
 }
 

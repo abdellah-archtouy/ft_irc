@@ -227,10 +227,21 @@ int Server::kick_out_client(int socket, std::map<int, User *> &clients, std::vec
         std::vector<Channels>::iterator itr = findChaine(clients[socket]->get_chaine()[j], this->Channel);
         if (itr != this->Channel.end())
         {
-            std::string form = FORMA(this->get_clients()[socket]->get_username(),
-                                     this->get_clients()[socket]->get_nickname(), this->get_clients()[socket]->get_ip());
-            broadCast(*itr, PART(form, itr->getName(), "kicked from channel"));
-            (*itr).getUsers().erase(itr->getUsers().find(socket));
+            int r = itr->getUsers().size();
+            itr->getUsers().erase(itr->getUsers().find(socket));
+            std::string form = FORMA(clients[socket]->get_username(), clients[socket]->get_nickname(), clients[socket]->get_ip());
+            broadCast(*itr, PART(form, itr->getName(), "leaving ..."));
+            if (std::find(itr->getOperators().begin(), itr->getOperators().end(), socket) != itr->getOperators().end())
+            {
+                if (itr->getOperators().size() == 1 && r > 1)
+                {
+                    itr->setOper(itr->getUsers().begin()->first);
+                    std::string str = "MODE " + itr->getName() + " +o " + itr->getUsers().begin()->second + "\r\n";
+                    std::cout << str;
+                    broadCast(*itr, str);
+                }
+                itr->getOperators().erase(std::find(itr->getOperators().begin(), itr->getOperators().end(), socket));
+            }
         }
     }
     close(socket);
