@@ -2,7 +2,7 @@
 
 void invite(std::vector<std::string> command, Server &s, int socket) {
     if (command.size() != 3)
-        return sendError(ERR_UNKNOWNCOMMAND(command[0], s.get_clients()[socket]->get_nickname()), socket);
+        return sendError(ERR_UNKNOWNCOMMAND(s.get_host(), command[0], s.get_clients()[socket]->get_nickname()), socket);
 
     std::vector<Channels>::iterator itrChaine = findChaine(command[2], s.Channel);
     if (itrChaine == s.Channel.end())

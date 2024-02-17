@@ -46,7 +46,7 @@ int privMsgParsing(std::vector<std::string> param, Server &s, int socket, std::s
         message += param[i] + " ";
     if (param[2][0] != ':' && param.size() > 3)
     {
-        str = ERR_UNKNOWNCOMMAND(message, s.get_clients()[socket]->get_nickname());
+        str = ERR_UNKNOWNCOMMAND(s.get_host(),message, s.get_clients()[socket]->get_nickname());
         send(socket, str.c_str(), str.size(), 0);
         return 1;
     }
