@@ -57,7 +57,6 @@ int privMsgParsing(std::vector<std::string> param, Server &s, int socket, std::s
         message += param[i] + " ";
         i++;
     }
-    std::cout << message << std::endl;
     return 0;
 }
 

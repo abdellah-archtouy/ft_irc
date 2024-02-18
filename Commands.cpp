@@ -76,7 +76,7 @@ void Server::Commands(int socket, std::vector<pollfd>::iterator pollitr) {
         bot(command, *this, socket);
     else if (command[0] == "QUIT")
         kick_out_client(socket, get_clients(), pollitr);
-    else
+    else if (command[0] != "PONG")
     {
         std::string str = ERR_UNKNOWNCOMMAND(get_host(), command[0], clients[socket]->get_nickname());
         send(socket, str.c_str(), str.size(), 0);

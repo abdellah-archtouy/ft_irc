@@ -17,7 +17,8 @@ int ParseJoin(std::vector<std::string> &command, std::map<std::string, std::stri
         std::stringstream w(command[2]);
         while (getline(w, tmp, ','))
         {
-            key.push_back(tmp);
+            if (!tmp.empty())
+                key.push_back(tmp);
             tmp.clear();
         }
     }
@@ -89,8 +90,7 @@ void sendJoinMessages(Server &s, int socket, Channels& Ch) {
             users += "@" + s.get_clients()[Ch.getOperators()[i]]->get_nickname() + " ";
     if (i == 1)
     {
-        std::string str = "MODE " + Ch.getName() + " +o " + s.get_clients()[socket]->get_nickname() + "\r\n";
-        send(socket, str.c_str(), str.size(), 0);
+        std::string str ;
         tmp = "+";
         if (Ch.get_i())
             tmp += "i";
@@ -105,10 +105,10 @@ void sendJoinMessages(Server &s, int socket, Channels& Ch) {
     if (i > 1)
     {
         if (!Ch.getTopic().empty())
-            tmp = RPL_TOPIC(forma, s.get_clients()[socket]->get_nickname(), Ch.getName(), Ch.getTopic());
-        else
-            tmp = RPL_NOTOPIC(s.get_host(), s.get_clients()[socket]->get_nickname(), Ch.getName());
-        send(socket, tmp.c_str(), tmp.size(), 0);
+        {
+            tmp = RPL_TOPIC(s.get_host(), s.get_clients()[socket]->get_nickname(), Ch.getName(), Ch.getTopic());
+            send(socket, tmp.c_str(), tmp.size(), 0);
+        }
         if (!Ch.getTopic().empty())
         {
             std::string str;
@@ -136,28 +136,31 @@ void join(int socket, Server& s, std::map<int , User *> &clients, std::vector<st
         for (itr = ChandKey.begin(); itr != ChandKey.end(); ++itr)
         {
             if (itr->first[0] != '#' || itr->first.size() == 1)
-                return sendError(ERR_NEEDMOREPARAMS(s.get_host(), clients[socket]->get_nickname()), socket);
+            {
+                sendError(ERR_NEEDMOREPARAMS(s.get_host(), clients[socket]->get_nickname()), socket);
+                continue ;
+            }
             if (findChaine(itr->first, s.Channel) == s.Channel.end())
                 addChannel(s.Channel, itr);
             itrchaine = findChaine(itr->first, s.Channel);
             if (std::find(clients[socket]->get_chaine().begin(), clients[socket]->get_chaine().end(), itrchaine->getName()) != clients[socket]->get_chaine().end()) // here i checked if the client is alread in channel
-                return ;
+                continue ;
             if (itrchaine->get_i() && std::find(itrchaine->get_inviteList().begin(), itrchaine->get_inviteList().end(), socket) == itrchaine->get_inviteList().end()) // here i see if the client is on invite list in +i channel
             {
                 send(socket, ERR_INVITEONLYCHAN(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).c_str(),
                     ERR_INVITEONLYCHAN(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).size(), 0);
-                return ;
+                continue ;
             }
             if (!itrchaine->getPass().empty() && ((!itr->second.empty() && itrchaine->getPass() != itr->second) || itr->second.empty())) // check the password if the channel is +k
             {
                 send(socket, ERR_BADCHANNELKEY(s.get_host(), clients[socket]->get_nickname()).c_str(), ERR_BADCHANNELKEY(s.get_host(), clients[socket]->get_nickname()).size(), 0);
-                return ;
+                continue ;
             }
             if (itrchaine->get_l() && howManyMembers(*itrchaine) >= itrchaine->getLimit()) // i check the user limit if i passed the user limites +l
             {
                 send(socket, ERR_CHANNELISFULL(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).c_str(),
                 ERR_CHANNELISFULL(s.get_host(), clients[socket]->get_nickname(), itrchaine->getName()).size(), 0);
-                return ;
+                continue ;
             }
             itrchaine->setUsers(socket,clients[socket]->get_nickname());
             clients[socket]->set_chaine(itrchaine->getName());

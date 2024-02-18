@@ -19,20 +19,27 @@ void topic(std::vector<std::string> command, Server &s, int socket) {
             return sendError(RPL_NOTOPIC(s.get_host(), s.get_clients()[socket]->get_nickname(), itr->getName()), socket);
         else
         {
-            sendError(RPL_TOPIC(forma, s.get_clients()[socket]->get_nickname(), itr->getName(), itr->getTopic()), socket);
+            sendError(RPL_TOPIC(s.get_host(), s.get_clients()[socket]->get_nickname(), itr->getName(), itr->getTopic()), socket);
             std::string str;
             ft_putnbr(itr->get_timestamp(), str);
             return sendError(RPL_TOPICWHOTIME(s.get_clients()[socket]->get_nickname(), itr->getName(), s.get_host(), itr->get_topicSetter(), str), socket);
         }
     }
-    if (command[2][0] != ':' && command.size() > 3) // here we set the topic we may clear it or gives it a value
-        return sendError(ERR_NEEDMOREPARAMS(s.get_host(), s.get_clients()[socket]->get_nickname()), socket);
-    
-    std::string topic = command[2];
-    if (command[2][0] == ':')
-        topic = command[2].substr(1, command[2].size()) + " ";
-    for (size_t i = 3; i < command.size(); i++)
+    std::string topic;
+    size_t i = 2;
+    for (i = 2; i < command.size(); i++)
+        if (command[i][0] == ':')
+            break ;
+    if (i == command.size())
+    {
+        topic += ":";
+        i--;
+    }
+    while (i < command.size())
+    {
         topic += command[i] + " ";
+        i++;
+    }
     if (topic.size() == 2 && topic[0] == ':')
         itr->set_topic("");
     else
@@ -41,6 +48,6 @@ void topic(std::vector<std::string> command, Server &s, int socket) {
         itr->set_topicSetter(s.get_clients()[socket]->get_nickname());
         itr->set_timestamp(std::time(NULL));
     }
-    std::string message = ":" + forma + " TOPIC " + itr->getName() + " :" + itr->getTopic() + "\r\n";
+    std::string message = ":" + forma + " TOPIC " + itr->getName() + " " + topic + "\r\n";
     broadCast(*itr, message);
 }
