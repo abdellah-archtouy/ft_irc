@@ -2,7 +2,7 @@
 
 void invite(std::vector<std::string> command, Server &s, int socket) {
     if (command.size() != 3)
-        return sendError(ERR_UNKNOWNCOMMAND(command[0], s.get_clients()[socket]->get_nickname()), socket);
+        return sendError(ERR_UNKNOWNCOMMAND(s.get_host(), command[0], s.get_clients()[socket]->get_nickname()), socket);
 
     std::vector<Channels>::iterator itrChaine = findChaine(command[2], s.Channel);
     if (itrChaine == s.Channel.end())
@@ -15,6 +15,8 @@ void invite(std::vector<std::string> command, Server &s, int socket) {
         return sendError(ERR_NOTONCHANNEL(s.get_host(), s.get_clients()[socket]->get_nickname(), command[1]), socket);
 
     std::map<int, User *>::iterator user = findFromAllChannels(s.get_clients(), command[1]);
+    if (user == s.get_clients().end())
+        return sendError(ERR_NOSUCHNICK(s.get_host(), s.get_clients()[socket]->get_nickname(), command[1]), socket);
     itrUser = itrChaine->getUsers().find(user->first);
     if (itrUser != itrChaine->getUsers().end())
         return sendError(ERR_USERONCHANNEL(s.get_host(), s.get_clients()[socket]->get_nickname(), command[1], command[2]), socket);

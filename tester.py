@@ -1,40 +1,28 @@
 import socket
-import threading
 import time
-# Informations de connexion au serveur IRC
-server_ip = "localhost"
-server_port = 8080
-server_password = "123"
 
+server = "localhost"
+port = 8080
+channel = "#channel_name"
+nickname_template = "Nickname{}"
+password = "1234"  
 
-# Liste de pseudos disponibles
-available_nicks = []
+irc_clients = []
 
+for i in range(1, 1025):
+    nickname = nickname_template.format(i)
+    irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    irc.connect((server, port))
+    time.sleep(0.01)
+    irc.send("PASS {}\r\n".format(password).encode())
+    time.sleep(0.01)
+    irc.send("USER {} 0 * :Client Bot\r\n".format(nickname).encode())
+    time.sleep(0.01)
+    irc.send("NICK {}\r\n".format(nickname).encode())
 
-for i in range(1, 1024):
-    nick = "client_bot{}".format(i)
-    available_nicks.append(nick)
+    irc_clients.append(irc)
 
-def connect_irc(nick):
-    irc_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    irc_socket.connect((server_ip, server_port))
-
-    if i % 2 == 0:
-        time.sleep(1)
-    irc_socket.send("PASS {}\r\n".format(server_password).encode())
-    time.sleep(1)
-    irc_socket.send("USER {} 0 * :Client Bot\r\n".format(nick).encode())
-    time.sleep(1)
-    irc_socket.send("NICK {}\r\n".format(nick).encode())
-    time.sleep(1)
-    # irc_socket.send("JOIN #t\r\n".format(nick).encode())
-    # time.sleep(6)
-    # irc_socket.send("QUIT\r\n".format(nick).encode())
-
-    while True:
-        message = irc_socket.recv(2048).decode()
+while True:
+    for irc in irc_clients:
+        message = irc.recv(2048).decode("UTF-8")
         print(message)
-
-for nick in available_nicks:
-    thread = threading.Thread(target=connect_irc, args=(nick,))
-    thread.start()

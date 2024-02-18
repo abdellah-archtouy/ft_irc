@@ -116,11 +116,17 @@ int parse_key(std::string s)
 
 int parse_limit(std::string s)
 {
-    for (size_t i = 0; i < s.size(); i++)
+    size_t i = 0;
+    if ((s[i] == '+' || s[i] == '-'))
+        i++;
+    while (i < s.size())
     {
         if (!isdigit(s[i]))
             return 1;
+        i++;
     }
+    if (atoi(s.c_str()) < 0)
+        return 1;
     return 0;
 }
 

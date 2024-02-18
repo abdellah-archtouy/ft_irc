@@ -42,14 +42,22 @@ int privMsgParsing(std::vector<std::string> param, Server &s, int socket, std::s
             return 1;
         }
     }
-    for (size_t i = 0; i < param.size(); i++)
-        message += param[i] + " ";
-    if (param[2][0] != ':' && param.size() > 3)
+    message = param[0] + " " + param[1] + " ";
+    size_t i = 2;
+    for (i = 2; i < param.size(); i++)
+        if (param[i][0] == ':')
+            break ;
+    if (i == param.size())
     {
-        str = ERR_UNKNOWNCOMMAND(message, s.get_clients()[socket]->get_nickname());
-        send(socket, str.c_str(), str.size(), 0);
-        return 1;
+        message += ":";
+        i--;
     }
+    while (i < param.size())
+    {
+        message += param[i] + " ";
+        i++;
+    }
+    std::cout << message << std::endl;
     return 0;
 }
 
@@ -68,9 +76,13 @@ void privMsg(std::vector<std::string> param, Server &s, int socket) {
         std::vector<Channels>::iterator itr = findChaine(param[1], s.Channel);
         if (std::find(s.get_clients()[socket]->get_chaine().begin(), s.get_clients()[socket]->get_chaine().end(), itr->getName())
             != s.get_clients()[socket]->get_chaine().end())
+        {
             for (userInChItr = itr->getUsers().begin(); userInChItr != itr->getUsers().end(); ++userInChItr)
                 if (userInChItr->first != socket)
                     send(userInChItr->first, message.c_str(), message.size(), 0);
+        }
+        else
+            return sendError(ERR_NOTONCHANNEL(s.get_host(), s.get_clients()[socket]->get_nickname(), param[1]), socket);
     }
     else
     {

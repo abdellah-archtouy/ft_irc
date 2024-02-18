@@ -15,7 +15,10 @@ void nick(std::vector<std::string> command, Server &s, int socket) {
         std::string str1 = s.get_clients()[socket]->get_nickname();
         s.get_clients()[socket]->set_nickname(command[1]);
         std::string str = ":" + FORMA(s.get_clients()[socket]->get_username(), str1, s.get_clients()[socket]->get_ip()) + " NICK :" + s.get_clients()[socket]->get_nickname() + "\r\n";
-        for (size_t i = 0; i < s.get_clients()[socket]->get_chaine().size(); i++)
-            broadCast((*findChaine(s.get_clients()[socket]->get_chaine()[i], s.Channel)), str); // broadcast to all channels
+        if (s.get_clients()[socket]->get_chaine().size() > 1)
+            for (size_t i = 0; i < s.get_clients()[socket]->get_chaine().size(); i++)
+                broadCast((*findChaine(s.get_clients()[socket]->get_chaine()[i], s.Channel)), str); // broadcast to all channels
+        else
+            send(socket, str.c_str(), str.size(), 0);
     }
 }

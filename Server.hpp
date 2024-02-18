@@ -44,7 +44,7 @@
 #define ERR_NOSUCHNICK(HOST , USER, TARG) (HOST  + " 401 " + USER + " " + TARG + " :No such nick/channel" + "\r\n")
 #define ERR_NOSUCHSERVER(HOST , USER, TARG) (HOST  + " 402 " + USER + " " + TARG + " :No such server" + "\r\n")
 #define ERR_NOSUCHCHANNEL(HOST , USER, TARG) (HOST  + " 403 " + USER + " " + TARG + " :No such channel" + "\r\n")
-#define ERR_UNKNOWNCOMMAND(COMMAND , USER) (USER  + " 421 " + COMMAND + " :Unknown command" + "\r\n")
+#define ERR_UNKNOWNCOMMAND(HOST, COMMAND , USER) (HOST + " 421 " + USER + COMMAND + " :Unknown command" + "\r\n")
 #define ERR_USERNOTINCHANNEL(HOST, USER, CHANNEL, TARGET) (HOST  + " 441 " + USER + " " + CHANNEL + " " + TARGET + " :They aren't on that channel" + "\r\n")
 
 #define ERR_CHANOPRIVSNEEDED(HOST, CHANNEL , USER) (HOST  + " 482 " + USER + " " +  CHANNEL + " :You're not channel operator" + "\r\n")

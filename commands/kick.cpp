@@ -22,7 +22,7 @@ void kick(std::vector<std::string> command, Server &s, int socket) {
     it->second->get_chaine().erase(std::find(it->second->get_chaine().begin(), it->second->get_chaine().end(), itr->getName()));
     int r = itr->getUsers().size();
     itr->getUsers().erase(useritr->first);
-    if (std::find(itr->getOperators().begin(), itr->getOperators().end(), useritr->first) != itr->getOperators().end())
+    if (std::find(itr->getOperators().begin(), itr->getOperators().end(), it->first) != itr->getOperators().end())
     {
         if (itr->getOperators().size() == 1 && r > 1)
         {
@@ -30,6 +30,8 @@ void kick(std::vector<std::string> command, Server &s, int socket) {
             std::string str = "MODE " + itr->getName() + " +o " + itr->getUsers().begin()->second + "\r\n";
             broadCast(*itr, str);
         }
-        itr->getOperators().erase(std::find(itr->getOperators().begin(), itr->getOperators().end(), useritr->first));
+        itr->getOperators().erase(std::find(itr->getOperators().begin(), itr->getOperators().end(), it->first));
     }
+    if (!howManyMembers(*itr))
+        s.Channel.erase(itr);
 }

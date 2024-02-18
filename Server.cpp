@@ -2,7 +2,7 @@
 
 Server::Server()
 {
-    serversocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    serversocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); // returns fd
     if (serversocket == -1)
     {
         std::cerr << "Error creating socket" << std::endl;
@@ -56,10 +56,10 @@ void Server::binding(std::string line)
     }
     _port = parameters[0];
     _pass = parameters[1];
-    sockaddr_in ServerAddress;
+    sockaddr_in ServerAddress; // struct used to specify the address and port number for communication
     ServerAddress.sin_family = AF_INET;
     ServerAddress.sin_addr.s_addr = INADDR_ANY;
-    ServerAddress.sin_port = htons(atoi(_port.c_str()));
+    ServerAddress.sin_port = htons(atoi(_port.c_str())); // change from host order byte to network order byte (the first one is )
 
     if (bind(serversocket, (struct sockaddr *)&ServerAddress, sizeof(ServerAddress)) == -1)
     {
@@ -67,7 +67,7 @@ void Server::binding(std::string line)
         exit(EXIT_FAILURE);
     }
 
-    if (listen(serversocket, 50) == -1)
+    if (listen(serversocket, 50) == -1) // change the socket to listing socket so we can accept the incoming requests
     {
         std::cerr << "Error listening for connections" << std::endl;
         exit(EXIT_FAILURE);
@@ -305,22 +305,23 @@ void Server::polling()
             add_client(fds, clients);
             this->fd = &fds[0];
         }
-        for (size_t i = 1; i < fds.size(); i++)
-        {
-            std::vector<pollfd>::iterator it;
-            if (fd[i].revents == POLLIN)
+        else
+            for (size_t i = 1; i < fds.size(); i++)
             {
-                it = fds.begin() + i;
-                ft_get_buffer(fds, clients, i, it);
-                break;
+                std::vector<pollfd>::iterator it;
+                if (fd[i].revents == POLLIN)
+                {
+                    it = fds.begin() + i;
+                    ft_get_buffer(fds, clients, i, it);
+                    break;
+                }
+                else if (fd[i].revents & POLLHUP)
+                {
+                    it = fds.begin() + i;
+                    kick_out_client(fds[i].fd, clients, it);
+                    break;
+                }
             }
-            else if (fd[i].revents & POLLHUP)
-            {
-                it = fds.begin() + i;
-                kick_out_client(fds[i].fd, clients, it);
-                break;
-            }
-        }
     }
 }
 
@@ -349,4 +350,10 @@ Server::~Server()
     //     delete clients[fd[i].fd];
     //     close(fd[i].fd);
     // }
+
 }
+
+// nickname ma kaynch f invite ||| done
+// kick.cpp:25 || done
+// PRIVMSG #ch hi you are not in the chanel || done
+// PRIVMSG n1 a ba c e f

@@ -50,7 +50,8 @@ void Server::Commands(int socket, std::vector<pollfd>::iterator pollitr) {
     if (str.empty())
         return ;
     while (getline(ss, tmp, ' '))
-        command.push_back(tmp);
+        if (!tmp.empty())
+            command.push_back(tmp);
     if (command[0] == "NICK")
         nick(command, *this, socket);
     else if (command[0] == "USER")
@@ -75,4 +76,9 @@ void Server::Commands(int socket, std::vector<pollfd>::iterator pollitr) {
         bot(command, *this, socket);
     else if (command[0] == "QUIT")
         kick_out_client(socket, get_clients(), pollitr);
+    else
+    {
+        std::string str = ERR_UNKNOWNCOMMAND(get_host(), command[0], clients[socket]->get_nickname());
+        send(socket, str.c_str(), str.size(), 0);
+    }
 }
