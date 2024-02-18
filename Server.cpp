@@ -106,7 +106,7 @@ int ft_chek_user(std::string user)
     {
         l.push_back(word);
     }
-    if (l.size() != 4)
+    if (l.size() <= 4)
         return 1;
     // a >> word;
     // a >> word;
@@ -136,7 +136,7 @@ std::string ft_get_realname(std::string user)
     a >> word;
     a >> word;
     a >> word;
-    a >> word;
+    std::getline(a, word);
     return word;
 }
 
@@ -223,7 +223,7 @@ int Server::ft_get_buffer(std::vector<pollfd> &fd, std::map<int, User *> &client
     bytesRead = recv(fd[i].fd, buffer, sizeof(buffer), 0);
     std::string ab = buffer;
     clients[fd[i].fd]->set_buffer(buffer);
-    if (ab.find("\r\n") == std::string::npos)
+    if (ab.find("\n") == std::string::npos)
         return 1;
     if (clients[fd[i].fd]->get_autho_status() == false)
     {

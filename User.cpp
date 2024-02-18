@@ -29,10 +29,12 @@ void User::set_nickname(std::string nikename)
 
 void User::set_buffer(std::string buffer1)
 {
-    if(this->buffer.find("\r\n") != std::string::npos)
+    if(buffer1.find("\n") != std::string::npos)
     {
-        this->buffer.clear();
-        this->buffer = buffer1;
+        if (buffer1.find('\r') != std::string::npos)
+            this->buffer = buffer1;
+        else
+            this->buffer = buffer1.substr(0, buffer1.size() - 1) + "\r\n";
     }
     else
     {

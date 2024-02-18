@@ -13,10 +13,10 @@ for i in range(1, 100):
     nickname = nickname_template.format(i)
     irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     irc.connect((server, port))
-    # time.sleep(0.01)
+    time.sleep(0.01)
     irc.send("PASS {}\r\n".format(password).encode())
     time.sleep(0.01)
-    irc.send("USER {} 0 * :Client Bot\r\n".format(nickname).encode())
+    irc.send("USER {} 0  * :Client Bot\r\n".format(nickname).encode())
     time.sleep(0.01)
     irc.send("NICK {}\r\n".format(nickname).encode())
 
