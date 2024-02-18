@@ -25,7 +25,7 @@ OBJ = $(SRC:%.cpp=%.o)
 
 OBJ_B = $(SRC_B:%.cpp=%.o)
 
-CPPFALGS =  -std=c++98 -Wall -Wextra -Werror -g -fsanitize=address
+CPPFALGS =  -std=c++98 -Wall -Wextra -Werror
 
 CC = c++
 
