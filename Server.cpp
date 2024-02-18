@@ -106,7 +106,7 @@ int ft_chek_user(std::string user)
     {
         l.push_back(word);
     }
-    if (l.size() <= 4)
+    if (l.size() < 4)
         return 1;
     // a >> word;
     // a >> word;
