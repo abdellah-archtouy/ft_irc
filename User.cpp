@@ -19,7 +19,10 @@ void User::set_username(std::string name)
 
 void User::set_pass(std::string pass)
 {
-    _passW = pass;
+    if (pass[0] == ':')
+        _passW = pass.substr(1, pass.size());
+    else
+        _passW = pass;
 }
 
 void User::set_nickname(std::string nikename)

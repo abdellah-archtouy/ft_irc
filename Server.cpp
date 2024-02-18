@@ -45,10 +45,10 @@ void Server::binding(std::string line)
     std::stringstream split(line);
     std::vector<std::string> parameters;
     std::string param;
-    while (split >> param)
-    {
-        parameters.push_back(param);
-    }
+    std::getline(split, param, ' ');
+    parameters.push_back(param);
+    std::getline(split, param);
+    parameters.push_back(param);
     if (parameters.size() != 2 || ft_check_param(parameters))
     {
         std::cout << "parameters Error" << std::endl;
@@ -148,6 +148,15 @@ int ft_check_cmd(std::string cmd)
     return 0;
 }
 
+int ft_check_pass(std::string clepass, std::string serpass)
+{
+    if (clepass[0] == ':')
+        clepass = clepass.substr(1, clepass.size());
+    if (clepass != serpass)
+        return 0;
+    return 1;
+}
+
 int Server::ft_check_auten(std::map<int, User *>& client, int socket)
 {
     std::string buffer = client[socket]->get_buffer().substr(0, client[socket]->get_buffer().find("\r\n"));
@@ -173,7 +182,7 @@ int Server::ft_check_auten(std::map<int, User *>& client, int socket)
             return send(socket, ERR_NEEDMOREPARAMS(get_host(), clients[socket]->get_username()).c_str(), ERR_NEEDMOREPARAMS(get_host(), clients[socket]->get_username()).size(), 0), 1;
         if (client[socket]->get_pass() != "")
             send(socket, ERR_ALREADYREGISTERED(get_host(), clients[socket]->get_username()).c_str(), ERR_ALREADYREGISTERED(get_host(), clients[socket]->get_username()).size(), 0);
-        else if (command[1] == this->_pass)
+        else if (ft_check_pass(command[1], this->_pass))
             client[socket]->set_pass(command[1]);
         else
             send(socket, ERR_PASSWDMISMATCH(get_host(), clients[socket]->get_username()).c_str(), ERR_PASSWDMISMATCH(get_host(), clients[socket]->get_username()).size(), 0);
@@ -355,23 +364,4 @@ std::vector<pollfd>& Server::get_fds()
 
 Server::~Server()
 {
-    // for (std::map<int ,User *>::iterator i = clients.begin(); i != clients.end(); i++)
-    // {
-    //     close(i->first);
-    //     delete i->second;
-    // }
-    // std::map<int, User *> c = clients;
-    // std::vector<pollfd> fd = fds;
-    // close(fd[0].fd);
-    // for (size_t i = 1; i <= clients.size(); i++)
-    // {
-    //     delete clients[fd[i].fd];
-    //     close(fd[i].fd);
-    // }
-
 }
-
-// nickname ma kaynch f invite ||| done
-// kick.cpp:25 || done
-// PRIVMSG #ch hi you are not in the chanel || done
-// PRIVMSG n1 a ba c e f
